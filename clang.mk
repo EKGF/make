@@ -1,0 +1,130 @@
+ifndef _MK_CLANG_MK_
+_MK_CLANG_MK_ := 1
+
+#$(info ---> .make/clang.mk)
+
+ifndef GIT_ROOT
+GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
+endif
+MK_DIR := $(GIT_ROOT)/.make
+
+include $(MK_DIR)/os.mk
+include $(MK_DIR)/git.mk
+include $(MK_DIR)/os-tools-*.mk
+include $(MK_DIR)/rustup.mk
+include $(MK_DIR)/brew.mk
+include $(MK_DIR)/curl.mk
+
+#$(info LLVM_PATH=$(LLVM_PATH))
+
+CLANG_VERSION := $(shell clang --version 2>/dev/null | head -n1 | cut -d\  -f4)
+ifdef CLANG_VERSION
+#$(info CLANG_VERSION=$(CLANG_VERSION))
+CLANG_MAIN_VERSION := $(shell echo $(CLANG_VERSION) | cut -d. -f1)
+#$(info CLANG_MAIN_VERSION=$(CLANG_MAIN_VERSION))
+else
+$(warning LLVM CLANG is not installed)
+endif
+
+CLANG_MAIN_VERSION_EXPECTED := 16
+
+.PHONY: clang-check
+ifndef CLANG_VERSION
+clang-check: llvm-install
+else
+ifneq ($(CLANG_MAIN_VERSION),$(CLANG_MAIN_VERSION_EXPECTED))
+ifeq ($(shell [ $(CLANG_MAIN_VERSION) -gt $(CLANG_MAIN_VERSION_EXPECTED) ] && echo 1 || echo 0),1)
+#$(info CLANG_MAIN_VERSION ($(CLANG_MAIN_VERSION)) is greater than CLANG_MAIN_VERSION_EXPECTED ($(CLANG_MAIN_VERSION_EXPECTED)))
+else
+$(info CLANG_MAIN_VERSION ($(CLANG_MAIN_VERSION)) is not equal to CLANG_MAIN_VERSION_EXPECTED ($(CLANG_MAIN_VERSION_EXPECTED)))
+endif
+clang-check: llvm-install
+else
+#$(info CLANG_MAIN_VERSION is equal to CLANG_MAIN_VERSION_EXPECTED)
+CLANG_INSTALL := 0
+clang-check:
+	@echo Using LLVM CLANG ${CLANG_VERSION}
+endif
+endif
+
+ifneq ($(wildcard /usr/lib/llvm-$(CLANG_MAIN_VERSION)/lib),)
+LIBCLANG_PATH := /usr/lib/llvm-$(CLANG_MAIN_VERSION)/lib
+endif
+
+ifndef LIBCLANG_PATH
+ifdef LLVM_PATH
+LIBCLANG_PATH := $(LLVM_PATH)
+else
+LIBCLANG_PATH := /usr/local/opt/llvm/lib
+endif
+endif
+
+
+#$(info LIBCLANG_PATH=$(LIBCLANG_PATH))
+
+ifndef LIBCLANG_PATH
+$(warning LIBCLANG_PATH is not defined)
+endif
+
+ifeq ("$(wildcard $(LIBCLANG_PATH))","")
+$(warning Directory $(LIBCLANG_PATH) does not exist)
+endif
+
+# LIBCLANG_BIN_PATH is something like: /usr/local/opt/llvm/bin/
+export LIBCLANG_BIN_PATH := $(shell cd $(LIBCLANG_PATH) 2>/dev/null && cd ../bin && pwd)
+#$(info LIBCLANG_BIN_PATH=$(LIBCLANG_BIN_PATH))
+
+# LIBCLANG_INCLUDE_PATH is something like: /usr/local/opt/llvm/include
+export LIBCLANG_INCLUDE_PATH := $(shell cd $(LIBCLANG_PATH) 2>/dev/null && cd ../include && pwd)
+#$(info LIBCLANG_INCLUDE_PATH=$(LIBCLANG_INCLUDE_PATH))
+
+export LDFLAGS="-L$(LIBCLANG_PATH)/c++ -Wl,-rpath,$(LIBCLANG_PATH)/c++"
+export CPPFLAGS="-I$(LIBCLANG_INCLUDE_PATH)"
+
+export CC=clang
+export CXX=clang
+
+ifeq ($(UNAME_S),Darwin)
+export BINDGEN_EXTRA_CLANG_ARGS="-I /Library/Developer/CommandLineTools/usr/include/c++/v1 -I /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include"
+endif
+
+#$(info LIBCLANG_PATH=$(LIBCLANG_PATH))
+
+LLVM_VERSION := $(shell "$(LIBCLANG_BIN_PATH)/llvm-config" --version 2>/dev/null)
+#$(info LLVM_VERSION=$(LLVM_VERSION))
+
+.PHONY: llvm-install
+ifeq ($(CLANG_INSTALL),0)
+llvm-install:
+else
+.INTERMEDIATE: $(TMP_DIR)/llvm-install.sh
+$(TMP_DIR)/llvm-install.sh: curl-check
+	@echo "Downloading LLVM install script:"
+	$(CURL_BIN) -fsSL https://apt.llvm.org/llvm.sh > $(TMP_DIR)/llvm-install.sh
+	chmod u+x $(TMP_DIR)/llvm-install.sh
+
+ifeq ($(UNAME_S),Windows)
+llvm-install:
+else
+ifeq ($(UNAME_S),Darwin)
+llvm-install: brew-check
+	@if [ ! -d $(HOMEBREW_CELLAR)/z3/4.12.* ] ; then $(BREW_BIN) install z3 ; else echo "z3 4.12.* is already installed" ; fi
+	@if [ ! -d $(HOMEBREW_CELLAR)/llvm/16.* ] ; then $(BREW_BIN) install llvm ; else echo "llvm 16.* is already installed" ; fi
+	@if [ ! -d $(HOMEBREW_CELLAR)/protobuf/23.* ] ; then $(BREW_BIN) install protobuf ; else echo "protobuf 23.* is already installed" ; fi
+else # anything else: linux
+llvm-install: $(TMP_DIR)/llvm-install.sh
+	@echo "Executing LLVM install script"
+	@yes '' | sudo $(TMP_DIR)/llvm-install.sh $(CLANG_MAIN_VERSION_EXPECTED)
+	@echo "LLVM install script finished successfully"
+	clang-$(CLANG_MAIN_VERSION_EXPECTED) --version
+	@echo "LLVM version $(CLANG_MAIN_VERSION_EXPECTED) has been installed"
+endif
+endif
+endif
+
+.PHONY: llvm-check
+llvm-check: clang-check
+
+#$(info <--- .make/clang.mk)
+
+endif # _MK_CLANG_MK_

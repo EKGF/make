@@ -1,0 +1,153 @@
+ifndef _MK_THIS_PROJECT_MK_
+_MK_THIS_PROJECT_MK_ := 1
+
+#$(info ---> .make/this-project.mk)
+
+ifndef GIT_ROOT
+GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
+endif
+MK_DIR := $(GIT_ROOT)/.make
+
+include $(MK_DIR)/oxigraph-test.mk
+include $(MK_DIR)/oxigraph-count.mk
+include $(MK_DIR)/oxigraph-load.mk
+include $(MK_DIR)/oxigraph-transform.mk
+include $(MK_DIR)/use-case.mk
+include $(MK_DIR)/pnpm.mk
+include $(MK_DIR)/amplify.mk
+include $(MK_DIR)/cog.mk
+include $(MK_DIR)/jq.mk
+include $(MK_DIR)/rustup.mk
+include $(MK_DIR)/asdf.mk
+include $(MK_DIR)/python.mk
+include $(MK_DIR)/poetry.mk
+include $(MK_DIR)/aws.mk
+include $(MK_DIR)/open-next.mk
+include $(MK_DIR)/nextjs.mk
+include $(MK_DIR)/nodejs.mk
+include $(MK_DIR)/terraform-install.mk
+
+.PHONY: test-no-reload
+test-no-reload: \
+	_oxigraph-run-tests-no-reload \
+	_oxigraph-run-counts-no-reload \
+	_oxigraph-run-transforms-no-reload \
+	oxigraph-test-passed
+
+.PHONY: test
+test: clean load test-no-reload
+
+.PHONY: transform
+transform: oxigraph-report-transforms
+	@echo "All transforms have been run"
+
+ifdef TMP_DIR
+.PHONY: clean-tmp
+clean-tmp: use-case-directories-check
+	@rm -rf $(TMP_DIR) >/dev/null 2>&1 || true
+	@echo "Everything is clean now"
+endif
+
+#
+# Load all the RDF files in this repo into your local OxiGraph database
+#
+.PHONY: load
+load: oxigraph-load
+	@echo "All RDF files have been loaded into OxiGraph"
+
+#
+# Launch the dev version of the Digital Twin UI on your local machine
+#
+.PHONY: ui-run
+ui-run: pnpm-run-dev
+
+#
+# Bump the version number of this project.
+# (This is a shortcut for "make cog-bump")
+# (It only updates the patch number, not the minor or major number,
+# so version 1.1.1 becomes 1.1.2, use the cog utility manually for minor or major bumps)
+#
+.PHONY: bump
+bump: cog-bump
+
+#
+# Install all the tools needed to run this project.
+#
+.PHONY: install
+install: \
+	os-tools-install \
+	brew-install \
+	asdf-install \
+	zip-install \
+	nodejs-install \
+	pnpm-install-itself \
+	sops-install \
+	pipx-check \
+	python-check \
+	poetry-install-itself \
+	terraform-install \
+	terragrunt-install \
+	cog-install \
+	oxigraph-install
+
+#
+# Update all the tools needed to run this project.
+# This potentially also updates version numbers in files like
+# package.json, Cargo.toml, etc.
+#
+.PHONY: update
+update: brew-upgrade rustup-update sops-check aws-cli-check terraform-check pnpm-update
+
+#
+# Clean everything
+#
+.PHONY: clean
+clean: open-next-clean nextjs-clean oxigraph-clean pnpm-clean amplify-clean clean-tmp
+
+#
+# Build all the components of this project
+#
+.PHONY: build
+build: open-next-build
+
+.PHONY: _pre-bump-hooks-info
+_pre-bump-hooks-info:
+	@echo "Executing pre-bump hooks for version $${NEW_VERSION}"
+
+# Execute the pre-bump hook for all package.json files
+.PHONY: pre-bump-hook-package-json
+pre-bump-hook-package-json: jq-check
+	@cat <<< $$($(JQ_BIN) '.version = "'$${NEW_VERSION}'"' $(GIT_ROOT)/package.json) | $(JQ_BIN) > $(GIT_ROOT)/package.json.tmp
+	@mv -f $(GIT_ROOT)/package.json.tmp $(GIT_ROOT)/package.json
+
+# Execute all pre-bump hooks (see cog.toml)
+.PHONY: pre-bump-hooks
+pre-bump-hooks: _pre-bump-hooks-info pre-bump-hook-package-json build
+
+.PHONY: deploy-terraform-info
+deploy-terraform-info:
+	@printf "$(green)Deploying the Terraform-based infrastructure:\n$(normal)"
+
+.PHONY: deploy-terraform-bootstrap
+deploy-terraform-bootstrap:
+	@printf "$(green)Bootstrapping Terraform-based infrastructure:\n$(normal)"
+	$(MAKE) --no-print-directory -C $(GIT_ROOT)/infra/aws-bootstrap deploy
+
+.PHONY: deploy-terraform-main
+deploy-terraform-main:
+	@printf "$(green)Deploying the main Terraform-based infrastructure:\n$(normal)"
+	$(MAKE) --no-print-directory -C $(GIT_ROOT)/infra/aws deploy
+
+.PHONY: deploy-terraform
+deploy-terraform: deploy-terraform-info deploy-terraform-bootstrap deploy-terraform-main
+	@printf "$(green)The Terraform-based infrastructure has been deployed\n$(normal)"
+
+.PHONY: deploy
+deploy: deploy-terraform
+
+.PHONY: build-deploy
+build-deploy: build deploy
+
+#$(info <--- .make/this-project.mk)
+
+endif # _MK_TERRAFORM_MK_

@@ -1,0 +1,7 @@
+*.mk~
+*.mk~*
+*.swp
+tmp-*
+generated-*.mk
+.*.mk
+brew-install-script.sh
