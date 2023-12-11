@@ -45,7 +45,7 @@ poetry-check: poetry-install-itself
 endif
 
 .PHONY: poetry-install-itself
-poetry-install-itself: brew-check pipx-check
+poetry-install-itself: brew-check pipx-install python-install
 	@printf "Installing $(bold)poetry$(normal) via pipx:\n"
 	@$(BREW_BIN) remove poetry >/dev/null 2>&1 || true
 	@rm -rf $(HOME)/.local/pipx/venvs/poetry >/dev/null 2>&1 || true
