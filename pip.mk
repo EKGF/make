@@ -14,7 +14,10 @@ MK_DIR := $(GIT_ROOT)/.make
 include $(MK_DIR)/os.mk
 include $(MK_DIR)/python.mk
 
+PIP_BIN := $(call where-is-binary,pip$(PYTHON_VERSION_EXPECTED_MAJOR_MINOR))
+ifndef PIP_BIN
 PIP_BIN := $(call where-is-binary,pip3)
+endif
 
 ifdef PIP_BIN
 PIP_VERSION := $(shell $(PIP_BIN) --version 2>/dev/null | cut -d\  -f2)
@@ -31,12 +34,12 @@ endif
 ifdef PIP_BIN
 ifeq ($(PIP_CHECKED),1)
 pip-check:
-	@#echo "Using pip $(PIP_VERSION)"
+	@#echo "Using pip $(PIP_VERSION) ($(PIP_BIN))"
 else
-pip-check: python-check
+pip-check: python-install
 endif
 else
-pip-check: python-check
+pip-check: python-install
 endif
 
 #$(info <--- .make/pip.mk)

@@ -13,13 +13,17 @@ MK_DIR := $(GIT_ROOT)/.make
 
 include $(MK_DIR)/os.mk
 include $(MK_DIR)/curl.mk
+include $(MK_DIR)/brew.mk
 
 PYTHON_VERSION_EXPECTED_MAJOR_MINOR := 3.12
-PYTHON_VERSION_EXPECTED := $(PYTHON_VERSION_EXPECTED_MAJOR_MINOR).0
+PYTHON_VERSION_EXPECTED := $(PYTHON_VERSION_EXPECTED_MAJOR_MINOR).1
 
 PYTHON_BIN := $(call where-is-binary,python$(PYTHON_VERSION_EXPECTED_MAJOR_MINOR))
 ifndef PYTHON_BIN
 PYTHON_BIN := $(call where-is-binary,python)
+endif
+ifndef PYTHON_BIN
+PYTHON_BIN := $(call where-is-binary,python3)
 endif
 
 #$(info PYTHON_BIN=$(PYTHON_BIN))
@@ -73,8 +77,11 @@ python-clean:
 .PHONY: python-install
 python-install: brew-check
 	@printf "Installing $(bold)python $(PYTHON_VERSION_EXPECTED)$(normal) via brew:\n"
-	$(BREW_BIN) install python@$(PYTHON_VERSION_EXPECTED)
+	@$(BREW_BIN) install python@$(PYTHON_VERSION_EXPECTED_MAJOR_MINOR)
+	-@$(BREW_BIN) unlink python
+	-@$(BREW_BIN) unlink python@$(PYTHON_VERSION_EXPECTED_MAJOR_MINOR)
 	$(BREW_BIN) link --overwrite python-packaging
+	@$(BREW_BIN) link --force python@$(PYTHON_VERSION_EXPECTED_MAJOR_MINOR)
 
 .PHONY: python-update
 python-update: python-check
