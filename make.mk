@@ -35,6 +35,13 @@ endif
 
 MAKE_BIN := $(strip $(MAKE_BIN))
 
+IS_MAKE_3 := $(shell $(MAKE) --version 2>/dev/null | head -n1 | grep -q 'GNU Make 3' && echo 1 || echo 0)
+ifeq ($(IS_MAKE_3),1)
+$(warning You're using GNU Make version $(MAKE_VERSION), you should use version 4, try the gmake command)
+else
+undefine IS_MAKE_3
+endif
+
 ifdef MAKE_BIN
 # Since "sops exec-env" does not seem to work with fully qualified path names
 # to executables we just have to fully rely on the PATH then on cygwin
