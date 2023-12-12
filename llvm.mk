@@ -55,8 +55,8 @@ export LLVM_INC_PATH := $(shell cd $(LLVM_LIB_PATH) 2>/dev/null && cd ../include
 export LDFLAGS="-L$(LLVM_LIB_PATH)/c++ -Wl,-rpath,$(LLVM_LIB_PATH)/c++"
 export CPPFLAGS="-I$(LLVM_INC_PATH)"
 
-export CC=llvm
-export CXX=llvm
+export CC=$(LLVM_BIN_PATH)/clang
+export CXX=$(LLVM_BIN_PATH)/clang++
 
 ifeq ($(UNAME_S),Darwin)
 export BINDGEN_EXTRA_LLVM_ARGS="-I /Library/Developer/CommandLineTools/usr/include/c++/v1 -I /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include"
