@@ -14,7 +14,7 @@ include $(MK_DIR)/os-tools-*.mk
 include $(MK_DIR)/rustup.mk
 include $(MK_DIR)/brew.mk
 include $(MK_DIR)/sops.mk
-include $(MK_DIR)/clang.mk
+include $(MK_DIR)/llvm.mk
 
 # TODO: support tectonic by installing with brew: icu4c pkg-config graphite2 freetype2
 

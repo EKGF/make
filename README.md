@@ -22,7 +22,7 @@ right order.
 - [Azure CLI](./azure-cli.mk)
 - [HomeBrew](./brew.mk)
 - [Cargo](./cargo.mk)
-- [CLang](./clang.mk)
+- [LLVM / Clang](./llvm.mk)
 - [Cocogitto](./cog.mk)
 - [Curl](./curl.mk)
 - [Docker](./docker.mk)
