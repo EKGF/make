@@ -184,9 +184,9 @@ rustup-check-components:
 else
 rustup-check-components: rustup-check
 	@printf "$(bold)rustup-check-components:$(normal)\n"
-	@echo "RUSTUP_TOOLCHAIN=$${RUSTUP_TOOLCHAIN}"
-	@echo "RUSTUP_ALL_TARGETS=$${RUSTUP_ALL_TARGETS}"
-	@echo "Check rustup toolchain and components\nfor default toolchain $(RUSTUP_TOOLCHAIN)\n and targets $(RUSTUP_ALL_TARGETS):"
+	@#echo "RUSTUP_TOOLCHAIN=$${RUSTUP_TOOLCHAIN}"
+	@#echo "RUSTUP_ALL_TARGETS=$${RUSTUP_ALL_TARGETS}"
+	@printf "Check rustup toolchain and components\nfor default toolchain $(green)$(RUSTUP_TOOLCHAIN)$(normal)\n and targets\n$(green)$(RUSTUP_ALL_TARGETS)$(normal):"
 	$(RUSTUP_BIN) \
 		toolchain install $(RUSTUP_TOOLCHAIN) \
 		--target $(RUSTUP_ALL_TARGETS) \
