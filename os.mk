@@ -184,6 +184,15 @@ green  := \033[32m
 blue   := \033[34m
 gray   := \033[100m
 
+REALPATH_BIN := $(call where-is-binary,grealpath)
+ifndef REALPATH_BIN
+ifeq ($(UNAME_S_lc),darwin)
+$(error GNU realpath is not installed, please install it using 'brew install coreutils')
+else
+REALPATH_BIN := $(call where-is-binary,realpath)
+endif
+endif
+
 SED_BIN := $(call where-is-binary,gsed)
 ifndef SED_BIN
 SED_BIN := $(call where-is-binary,sed)

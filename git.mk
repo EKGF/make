@@ -7,14 +7,18 @@ ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 endif
 
+MK_DIR := $(GIT_ROOT)/.make
+
+include $(MK_DIR)/os.mk
+include $(MK_DIR)/brew.mk
+
 # Pass GIT_ROOT through to all terraform scripts as well
 ifndef TF_VAR_git_root
 export TF_VAR_git_root := $(GIT_ROOT)
 endif
-
-MK_DIR := $(GIT_ROOT)/.make
-
-include $(MK_DIR)/brew.mk
+# Pass GIT_ROOT through to all terraform scripts as well in relative form
+export TF_VAR_git_root_relative := $(shell $(REALPATH_BIN) --relative-to="$(shell pwd)/terraform" "$(GIT_ROOT)")
+#$(info TF_VAR_git_root_relative=$(TF_VAR_git_root_relative))
 
 GIT_CURRENT_BRANCH := $(shell git symbolic-ref --short HEAD 2>/dev/null)
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
