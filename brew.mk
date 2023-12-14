@@ -33,7 +33,9 @@ BREW_PACKAGES := $(TMP_DIR)/brew-installed-packages.txt
 #.INTERMEDIATE: $(BREW_PACKAGES)
 ifdef BREW_BIN
 $(BREW_PACKAGES): brew-check
-	HOMEBREW_NO_AUTO_UPDATE=1 $(BREW_BIN) list --versions > $@
+	@printf "Updating brew package list\n"
+	@HOMEBREW_NO_AUTO_UPDATE=1 $(BREW_BIN) list --versions > $@
+	ls -al $@
 else
 $(BREW_PACKAGES): brew-install
 endif

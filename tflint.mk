@@ -36,11 +36,12 @@ tflint-check: tflint-install
 endif
 
 .PHONY: tflint-install
-tflint-install: brew-check
-	@printf "Installing $(bold)tflint $(TFLINT_VERSION_EXPECTED)$(normal) via brew:\n"
-	@$(BREW_BIN) install --force tflint
-	@$(BREW_BIN) unlink tflint
-	-@$(BREW_BIN) link --force tflint
+tflint-install: brew-check $(BREW_PACKAGES)
+	@grep "^vips " $(BREW_PACKAGES) || ( \
+		printf "Installing $(bold)tflint $(TFLINT_VERSION_EXPECTED)$(normal) via brew:\n" ; \
+		$(BREW_BIN) install --force tflint ; \
+		$(BREW_BIN) unlink tflint ; \
+		$(BREW_BIN) link --force tflint )
 
 #$(info <--- .make/tflint.mk)
 

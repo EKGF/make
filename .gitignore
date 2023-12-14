@@ -5,3 +5,4 @@ tmp-*
 generated-*.mk
 .*.mk
 brew-install-script.sh
+.tmp/
