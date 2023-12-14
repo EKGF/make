@@ -41,7 +41,7 @@ $(MK_FLAG_FILE): $(MK_DIR) $(MK_TAR)
 	@echo "Extracting the EKGF Make files into the $(MK_DIR) directory"
 	@tar -xzf $(MK_TAR) -C $(MK_DIR) --strip-components=1
 	@rm -rf $(MK_DIR)/.idea
-	grep -q "EKGF/make.git" .git/config || (cd $(MK_DIR) && mv -f ekgf-make.mk ..)
+	grep -q "EKGF/make.git" .git/config 2>/dev/null || (cd $(MK_DIR) && mv -f ekgf-make.mk ..)
 	@touch -mc $(MK_DIR)/*
 	-@$(MAKE) --no-print-directory $(MAKECMDGOALS)
 
