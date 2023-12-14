@@ -34,8 +34,6 @@ LLVM_LIB_PATH := /usr/local/opt/llvm/lib
 endif
 endif
 
-$(info LLVM_LIB_PATH=$(LLVM_LIB_PATH))
-
 ifndef LLVM_LIB_PATH
 $(warning LLVM_LIB_PATH is not defined)
 endif
@@ -70,7 +68,7 @@ CLANG_BIN := $(call where-is-binary,clang)
 
 ifdef CLANG_BIN
 LLVM_VERSION := $(shell "$(CLANG_BIN)" --version 2>/dev/null | head -n1 | cut -d\  -f4)
-$(info LLVM_VERSION=$(LLVM_VERSION))
+#$(info LLVM_VERSION=$(LLVM_VERSION))
 endif
 ifeq ($(LLVM_VERSION),$(LLVM_VERSION_EXPECTED))
 LLVM_CHECKED := 1
