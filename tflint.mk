@@ -37,7 +37,7 @@ endif
 
 .PHONY: tflint-install
 tflint-install: brew-check $(BREW_PACKAGES)
-	@grep "^vips " $(BREW_PACKAGES) || ( \
+	@grep "^tflint $(TFLINT_VERSION_EXPECTED)" $(BREW_PACKAGES) || ( \
 		printf "Installing $(bold)tflint $(TFLINT_VERSION_EXPECTED)$(normal) via brew:\n" ; \
 		$(BREW_BIN) install --force tflint ; \
 		$(BREW_BIN) unlink tflint ; \
