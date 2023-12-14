@@ -1,3 +1,8 @@
+#
+# This file is a copy of https://github.com/EKGF/make/blob/main/ekgf-make.mk.
+# It handles the installation and updating of the .make directory in the root
+# of your own git repository.
+#
 ifndef _MK_EKGF_MAKE_MK_
 _MK_EKGF_MAKE_MK_ := 1
 
@@ -36,7 +41,7 @@ $(MK_FLAG_FILE): $(MK_DIR) $(MK_TAR)
 	@echo "Extracting the EKGF Make files into the $(MK_DIR) directory"
 	@tar -xzf $(MK_TAR) -C $(MK_DIR) --strip-components=1
 	@rm -rf $(MK_DIR)/.idea
-	@cd $(MK_DIR) && mv -f ekgf-make.mk ..
+	grep -q "EKGF/make.git" .git/config || (cd $(MK_DIR) && mv -f ekgf-make.mk ..)
 	@touch -mc $(MK_DIR)/*
 	-@$(MAKE) --no-print-directory $(MAKECMDGOALS)
 
