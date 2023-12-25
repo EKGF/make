@@ -19,7 +19,7 @@ endif
 ifdef TFLINT_BIN
 TFLINT_VERSION := $(shell $(TFLINT_BIN) --version 2>/dev/null | head -n1 | cut -d\  -f3)
 endif
-TFLINT_VERSION_EXPECTED := 0.49.0
+TFLINT_VERSION_EXPECTED := 0.50.0
 ifeq ($(TFLINT_VERSION),$(TFLINT_VERSION_EXPECTED))
 TFLINT_CHECKED := 1
 else
@@ -37,7 +37,7 @@ endif
 
 .PHONY: tflint-install
 tflint-install: brew-check $(BREW_PACKAGES)
-	@grep "^tflint $(TFLINT_VERSION_EXPECTED)" $(BREW_PACKAGES) || ( \
+	@grep -q "^tflint $(TFLINT_VERSION_EXPECTED)$$" $(BREW_PACKAGES) 2>/dev/null || ( \
 		printf "Installing $(bold)tflint $(TFLINT_VERSION_EXPECTED)$(normal) via brew:\n" ; \
 		$(BREW_BIN) install --force tflint ; \
 		$(BREW_BIN) unlink tflint ; \
