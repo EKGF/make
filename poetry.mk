@@ -45,12 +45,18 @@ poetry-check: poetry-install-itself
 endif
 
 .PHONY: poetry-install-itself
+ifdef PYTHON_BIN
 poetry-install-itself: brew-check pipx-install python-install
 	@printf "Installing $(bold)poetry$(normal) via pipx:\n"
 	@$(BREW_BIN) remove poetry >/dev/null 2>&1 || true
 	@rm -rf $(HOME)/.local/pipx/venvs/poetry >/dev/null 2>&1 || true
-	$(PIPX_BIN) install --python python$(PYTHON_VERSION_EXPECTED_MAJOR_MINOR) --force git+https://github.com/python-poetry/poetry.git@master
+	$(PIPX_BIN) install --force git+https://github.com/python-poetry/poetry.git@master
 	$(PIPX_BIN) inject poetry poetry-plugin-dotenv
+else
+poetry-install-itself:
+	@echo "Cannot install poetry, python is not installed, run $(MAKE) python-install first"
+	exit 1
+endif
 
 .PHONY: poetry-clean
 poetry-clean:

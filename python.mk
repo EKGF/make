@@ -26,6 +26,10 @@ ifndef PYTHON_BIN
 PYTHON_BIN := $(call where-is-binary,python3)
 endif
 
+ifdef PYTHON_BIN
+export PIPX_DEFAULT_PYTHON := $(PYTHON_BIN)
+endif
+
 #$(info PYTHON_BIN=$(PYTHON_BIN))
 
 ifdef PYTHON_BIN
