@@ -20,7 +20,7 @@ PIPX_BIN := $(call where-is-binary,pipx)
 ifdef PIPX_BIN
 PIPX_VERSION := $(shell $(PIPX_BIN) --version 2>/dev/null | cut -d\  -f2)
 endif
-PIPX_VERSION_EXPECTED := 1.3.3
+PIPX_VERSION_EXPECTED := 1.4.1
 ifeq ($(PIPX_VERSION),$(PIPX_VERSION_EXPECTED))
 PIPX_CHECKED := 1
 else
