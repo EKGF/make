@@ -168,6 +168,7 @@ cargo-install-components: rustup-check cargo-extensions
 .PHONY: cargo-extensions
 cargo-extensions: rustup-check \
 	cog-check \
+	cargo-install-lambda \
 	cargo-install-cargo-outdated \
 	cargo-install-cargo-cache \
 	cargo-install-cargo-edit \
@@ -176,6 +177,11 @@ cargo-extensions: rustup-check \
 	cargo-install-wasm-pack \
 	cargo-install-wasm-bindgen-cli \
 	cargo-install-wasm2map
+
+.PHONY: cargo-install-cargo-lambda
+cargo-install-cargo-lambda:
+	@echo Install Cargo Lambda
+	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-lambda --force
 
 .PHONY: cargo-install-cargo-edit
 cargo-install-cargo-edit:
