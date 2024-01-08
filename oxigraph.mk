@@ -13,6 +13,7 @@ endif
 MK_DIR := $(GIT_ROOT)/.make
 
 include $(MK_DIR)/os.mk
+include $(MK_DIR)/os-tools.mk
 include $(MK_DIR)/cargo.mk
 include $(MK_DIR)/rdf-files.mk
 include $(MK_DIR)/oxigraph-count.mk
