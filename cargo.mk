@@ -179,9 +179,16 @@ cargo-extensions: rustup-check \
 	cargo-install-wasm2map
 
 .PHONY: cargo-install-cargo-lambda
-cargo-install-cargo-lambda:
+cargo-install-cargo-lambda: zig-install
 	@echo Install Cargo Lambda
 	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-lambda --force
+
+# zig is exclusively used by cargo-lambda only so for now we just put this here
+# eventually we may want to move it to its own zig.mk file
+.PHONY: zig-install
+zig-install: brew-check $(BREW_PACKAGES)
+	@echo Install Zig
+	@grep "^zig " $(BREW_PACKAGES) || $(BREW_BIN) install zig
 
 .PHONY: cargo-install-cargo-edit
 cargo-install-cargo-edit:
