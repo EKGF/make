@@ -168,7 +168,7 @@ cargo-install-components: rustup-check cargo-extensions
 .PHONY: cargo-extensions
 cargo-extensions: rustup-check \
 	cog-check \
-	cargo-install-lambda \
+	cargo-install-cargo-lambda \
 	cargo-install-cargo-outdated \
 	cargo-install-cargo-cache \
 	cargo-install-cargo-edit \
