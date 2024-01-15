@@ -8,7 +8,7 @@ _MK_EKGF_MAKE_MK_ := 1
 
 $(info ---> .make/ekgf-make.mk)
 
-_MK_ENABLE_DOWNLOAD := 1
+_MK_ENABLE_DOWNLOAD_ := 1
 
 MK_TAR_DIR := $(HOME)/.tmp
 MK_TAR := $(MK_TAR_DIR)/make.tar.gz
@@ -17,10 +17,11 @@ ifdef GIT_ROOT
 MK_DIR := $(GIT_ROOT)/.make
 ifneq ("$(wildcard $(GIT_ROOT)/../make)","")
 MK_DIR := $(GIT_ROOT)/../make
-_MK_ENABLE_DOWNLOAD := 0
+_MK_ENABLE_DOWNLOAD_ := 0
 endif
 else
 MK_DIR := .make
+_MK_ENABLE_DOWNLOAD_ := 0
 endif
 endif
 
@@ -36,7 +37,7 @@ endif
 include $(MK_FLAG_FILE)
 -include $(MK_DIR)/*.mk
 
-ifeq ($(_MK_ENABLE_DOWNLOAD),1)
+ifeq ($(_MK_ENABLE_DOWNLOAD_),1)
 $(MK_DIR):
 	@echo "Creating the $(MK_DIR) directory"
 	@mkdir -p $(MK_DIR) >/dev/null 2>&1
@@ -59,9 +60,13 @@ $(MK_FLAG_FILE): $(MK_DIR) $(MK_TAR)
 
 else
 $(MK_DIR):
+
 $(MK_TAR_DIR):
+
 $(MK_TAR):
+
 $(MK_FLAG_FILE):
+
 endif
 
 #$(MK_DIR)/*.mk &: $(MK_FLAG_FILE)
