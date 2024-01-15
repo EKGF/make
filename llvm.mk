@@ -18,8 +18,8 @@ include $(MK_DIR)/curl.mk
 LLVM_VERSION_EXPECTED := 17.0.6
 LLVM_MAIN_VERSION_EXPECTED := $(shell echo $(LLVM_VERSION_EXPECTED) | cut -d. -f1)
 
-ifneq ($(wildcard /home/linuxbrew/.linuxbrew/Cellar/llvm/$(LLVM_VERSION_EXPECTED)/lib),)
-LLVM_LIB_PATH := /home/linuxbrew/.linuxbrew/Cellar/llvm/$(LLVM_VERSION_EXPECTED)/lib
+ifneq ($(wildcard $(HOMEBREW_CELLAR)/llvm/$(LLVM_VERSION_EXPECTED)/lib),)
+LLVM_LIB_PATH := $(HOMEBREW_CELLAR)/llvm/$(LLVM_VERSION_EXPECTED)/lib
 else
 ifneq ($(wildcard /usr/lib/llvm-$(LLVM_MAIN_VERSION_EXPECTED)/lib),)
 LLVM_LIB_PATH := /usr/lib/llvm-$(LLVM_MAIN_VERSION_EXPECTED)/lib
