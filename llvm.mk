@@ -38,8 +38,11 @@ ifndef LLVM_LIB_PATH
 $(warning LLVM_LIB_PATH is not defined)
 endif
 
+ifneq ($(skip_llvm_check),1)
 ifeq ("$(wildcard $(LLVM_LIB_PATH))","")
-$(warning Directory $(LLVM_LIB_PATH) does not exist)
+$(warning Directory $(LLVM_LIB_PATH) does not exist, we need to install LLVM)
+$(shell $(MAKE) --no-print-directory --environment-overrides --no-builtin-rules llvm-install-with-brew skip_cargo_check=1 skip_llvm_check=1)
+endif
 endif
 
 ifdef LLVM_LIB_PATH

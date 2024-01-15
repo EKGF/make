@@ -8,15 +8,22 @@ _MK_EKGF_MAKE_MK_ := 1
 
 $(info ---> .make/ekgf-make.mk)
 
+_MK_ENABLE_DOWNLOAD := 1
+
 MK_TAR_DIR := $(HOME)/.tmp
 MK_TAR := $(MK_TAR_DIR)/make.tar.gz
 ifndef MK_DIR
 ifdef GIT_ROOT
 MK_DIR := $(GIT_ROOT)/.make
+ifneq ("$(wildcard $(GIT_ROOT)/../make)","")
+MK_DIR := $(GIT_ROOT)/../make
+_MK_ENABLE_DOWNLOAD := 0
+endif
 else
 MK_DIR := .make
 endif
 endif
+
 MK_URL := https://github.com/EKGF/make/archive/refs/heads/main.tar.gz
 MK_FLAG_FILE := $(MK_DIR)/os.mk
 .PRECIOUS: $(MK_FLAG_FILE)
@@ -29,6 +36,7 @@ endif
 include $(MK_FLAG_FILE)
 -include $(MK_DIR)/*.mk
 
+ifeq ($(_MK_ENABLE_DOWNLOAD),1)
 $(MK_DIR):
 	@echo "Creating the $(MK_DIR) directory"
 	@mkdir -p $(MK_DIR) >/dev/null 2>&1
@@ -48,6 +56,13 @@ $(MK_FLAG_FILE): $(MK_DIR) $(MK_TAR)
 	@grep -q "EKGF/make.git" .git/config 2>/dev/null || (cd $(MK_DIR) && mv -f ekgf-make.mk ..)
 	@touch -mc $(MK_DIR)/*
 	-@$(MAKE) --no-print-directory $(MAKECMDGOALS)
+
+else
+$(MK_DIR):
+$(MK_TAR_DIR):
+$(MK_TAR):
+$(MK_FLAG_FILE):
+endif
 
 #$(MK_DIR)/*.mk &: $(MK_FLAG_FILE)
 
