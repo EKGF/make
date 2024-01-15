@@ -35,6 +35,8 @@ endif
 
 MAKE_BIN := $(strip $(MAKE_BIN))
 
+$(error MAKE_BIN=$(MAKE_BIN) MAKE=$(MAKE))
+
 IS_MAKE_3 := $(shell $(MAKE) --version 2>/dev/null | head -n1 | grep -q 'GNU Make 3' && echo 1 || echo 0)
 ifeq ($(IS_MAKE_3),1)
 IS_MAKE_4 := 0
