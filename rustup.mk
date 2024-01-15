@@ -146,19 +146,19 @@ rustup-toolchain-install: _rustup-toolchain-install-no-info rustup-info
 .PHONY: _rustup-toolchain-install-no-info
 _rustup-toolchain-install-no-info:
 	@printf "$(bold)rustup-toolchain-install:$(normal)\n"
-	@~$(RUSTUP_BIN) toolchain install \
+	@$(RUSTUP_BIN) toolchain install \
 		stable \
 		--target $(RUSTUP_ALL_TARGETS) \
 		--profile default \
 		--allow-downgrade \
 		--force-non-host
-	@~$(RUSTUP_BIN) toolchain install \
+	@$(RUSTUP_BIN) toolchain install \
 		nightly \
 		--target $(RUSTUP_ALL_TARGETS) \
 		--profile default \
 		--allow-downgrade \
 		--force-non-host
-	@~$(RUSTUP_BIN) toolchain install \
+	@$(RUSTUP_BIN) toolchain install \
 		$(RUSTUP_TOOLCHAIN) \
 		--target $(RUSTUP_ALL_TARGETS) \
 		--profile default \
