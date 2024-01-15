@@ -134,11 +134,11 @@ rustup-install-with-curl: curl-check
 .PHONY: rustup-info
 rustup-info:
 	@printf "$(bold)Installed targets:$(normal)\n"
-	@~/.cargo/bin/rustup target list --installed
+	@$(RUSTUP_BIN) target list --installed
 	@printf "$(bold)Installed toolchains:$(normal)\n"
-	@~/.cargo/bin/rustup toolchain list
+	@$(RUSTUP_BIN) toolchain list
 	@printf "$(bold)Active toolchain:$(normal)\n"
-	@~/.cargo/bin/rustup show
+	@~$(RUSTUP_BIN) show
 
 .PHONY: rustup-toolchain-install
 rustup-toolchain-install: _rustup-toolchain-install-no-info rustup-info
@@ -146,19 +146,19 @@ rustup-toolchain-install: _rustup-toolchain-install-no-info rustup-info
 .PHONY: _rustup-toolchain-install-no-info
 _rustup-toolchain-install-no-info:
 	@printf "$(bold)rustup-toolchain-install:$(normal)\n"
-	@~/.cargo/bin/rustup toolchain install \
+	@~$(RUSTUP_BIN) toolchain install \
 		stable \
 		--target $(RUSTUP_ALL_TARGETS) \
 		--profile default \
 		--allow-downgrade \
 		--force-non-host
-	@~/.cargo/bin/rustup toolchain install \
+	@~$(RUSTUP_BIN) toolchain install \
 		nightly \
 		--target $(RUSTUP_ALL_TARGETS) \
 		--profile default \
 		--allow-downgrade \
 		--force-non-host
-	@~/.cargo/bin/rustup toolchain install \
+	@~$(RUSTUP_BIN) toolchain install \
 		$(RUSTUP_TOOLCHAIN) \
 		--target $(RUSTUP_ALL_TARGETS) \
 		--profile default \
@@ -170,7 +170,7 @@ ifdef RUSTUP_VERSION
 rustup-check:
 else
 rustup-check: rustup-install
-	@~/.cargo/bin/rustup show
+	@~$(RUSTUP_BIN) show
 endif
 
 .PHONY: rustup-update
