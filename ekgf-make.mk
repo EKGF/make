@@ -16,13 +16,18 @@ ifndef MK_DIR
 ifdef GIT_ROOT
 MK_DIR := $(GIT_ROOT)/.make
 ifneq ("$(wildcard $(GIT_ROOT)/../make)","")
+# If the EKGF make repository is cloned in sibling directory of the current repo, and that sibling directory is
+# simply called "make" then we assume its a clone of the EKGF make repo.
 MK_DIR := $(GIT_ROOT)/../make
 _MK_ENABLE_DOWNLOAD_ := 0
 endif
 else
 MK_DIR := .make
-_MK_ENABLE_DOWNLOAD_ := 0
 endif
+else
+# If MKG_DIR is defined on the command line, then we assume that it points to the
+# clone of the EKGF make repository. In that case, we don't need to download it.
+_MK_ENABLE_DOWNLOAD_ := 0
 endif
 
 MK_URL := https://github.com/EKGF/make/archive/refs/heads/main.tar.gz
