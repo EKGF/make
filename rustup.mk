@@ -132,6 +132,7 @@ rustup-install-with-curl: curl-check
 	@echo "****** Rustup, rust, cargo etc. have been installed ******"
 
 .PHONY: rustup-info
+ifdef RUSTUP_BIN
 rustup-info:
 	@printf "$(bold)Installed targets:$(normal)\n"
 	@$(RUSTUP_BIN) target list --installed
@@ -139,6 +140,9 @@ rustup-info:
 	@$(RUSTUP_BIN) toolchain list
 	@printf "$(bold)Active toolchain:$(normal)\n"
 	@~$(RUSTUP_BIN) show
+else
+rustup-info:
+endif
 
 .PHONY: rustup-toolchain-install
 rustup-toolchain-install: _rustup-toolchain-install-no-info rustup-info
