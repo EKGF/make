@@ -83,9 +83,9 @@ CARGO_HOME := $(shell cygpath --windows "$(CARGO_HOME)")
 endif
 
 ifneq ("$(wildcard $(CARGO_HOME)/bin/cargo)","")
-	CARGO_BIN := $(call where-is-binary,cargo)
+CARGO_BIN := $(call where-is-binary,cargo)
 else
-	CARGO_BIN := $(CARGO_HOME)/bin/cargo
+CARGO_BIN := $(CARGO_HOME)/bin/cargo
 endif
 
 # Since "sops exec-env" does not seem to work with fully qualified path names
