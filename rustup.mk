@@ -135,6 +135,7 @@ rustup-install-with-curl: curl-check
 ifdef RUSTUP_BIN
 rustup-info:
 	@printf "$(bold)Installed targets:$(normal)\n"
+	@echo RUSTUP_BIN=$(RUSTUP_BIN)
 	@$(RUSTUP_BIN) target list --installed
 	@printf "$(bold)Installed toolchains:$(normal)\n"
 	@$(RUSTUP_BIN) toolchain list
