@@ -144,6 +144,7 @@ rustup-info:
 rustup-toolchain-install: _rustup-toolchain-install-no-info rustup-info
 
 .PHONY: _rustup-toolchain-install-no-info
+ifdef RUSTUP_BIN
 _rustup-toolchain-install-no-info:
 	@printf "$(bold)rustup-toolchain-install:$(normal)\n"
 	@$(RUSTUP_BIN) toolchain install \
@@ -164,6 +165,9 @@ _rustup-toolchain-install-no-info:
 		--profile default \
 		--allow-downgrade \
 		--force-non-host
+else
+_rustup-toolchain-install-no-info:
+endif
 
 .PHONY: rustup-check
 ifdef RUSTUP_VERSION
