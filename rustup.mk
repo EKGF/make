@@ -25,14 +25,14 @@ RUSTUP_HOME_X := $(shell cygpath --windows "$(USERPROFILE)\\.cargo")
 ifneq ("$(wildcard $(RUSTUP_HOME_X))","")
 RUSTUP_HOME := "$(RUSTUP_HOME_X)"
 else
-$(info $(RUSTUP_HOME_X) does not exist either)
+$(info $(RUSTUP_HOME_X) does not exist)
 endif
 RUSTUP_HOME_X :=
 else
 ifneq ("$(wildcard $(HOME)/.cargo)","")
 RUSTUP_HOME := $(HOME)/.cargo
 else
-$(info $(HOME)/.cargo does not exist either)
+$(info $(HOME)/.cargo does not exist)
 endif
 endif
 endif
@@ -47,11 +47,13 @@ $(info $(MAKE) --no-print-directory --environment-overrides --no-builtin-rules r
 $(shell $(MAKE) --no-print-directory --environment-overrides --no-builtin-rules rustup-install skip_rustup_check=1 skip_cargo_check=1)
 endif
 
+ifneq ($(skip_rustup_check),1)
 ifneq ("$(wildcard $(HOME)/.cargo/bin/rustup)","")
 RUSTUP_BIN := $(HOME)/.cargo/bin/rustup
 else
 $(warning $(HOME)/.cargo/bin/rustup does not exist, assuming "rustup" instead)
 RUSTUP_BIN := rustup
+endif
 endif
 endif
 
@@ -190,6 +192,7 @@ ifeq ($(RUNNING_IN_DOCKER),1)
 rustup-check-components:
 	@echo "Running in docker, skipping rustup-check-components"
 else
+ifdef RUSTUP_BIN
 rustup-check-components: rustup-check
 	@printf "$(bold)rustup-check-components:$(normal)\n"
 	@#echo "RUSTUP_TOOLCHAIN=$${RUSTUP_TOOLCHAIN}"
@@ -199,6 +202,9 @@ rustup-check-components: rustup-check
 		toolchain install $(RUSTUP_TOOLCHAIN) \
 		--target $(RUSTUP_ALL_TARGETS) \
 		--component rust-docs rustc rust-std rust-src rustfmt clippy rust-analyzer
+else
+rustup-check-components:
+endif
 endif
 
 .PHONY: rustup-nightly

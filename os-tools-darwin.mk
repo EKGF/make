@@ -26,7 +26,7 @@ xcode-os-tools-install:
 endif
 
 .PHONY: darwin-tools-install
-darwin-tools-install: gcc-install xcode-os-tools-install llvm-install sops-check
+darwin-tools-install: gcc-install xcode-os-tools-install llvm-install-with-brew sops-check
 
 .PHONY: _darwin-tools-install-info
 _darwin-tools-install-info:

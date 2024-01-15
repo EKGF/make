@@ -74,7 +74,7 @@ endif
 
 ifeq ($(CARGO_HOME),)
 $(warning Specify CARGO_HOME)
-$(shell $(MAKE) --no-print-directory --environment-overrides --no-builtin-rules cargo-check skip_cargo_check=1)
+$(shell $(MAKE) --no-print-directory --environment-overrides --no-builtin-rules rustup-install skip_cargo_check=1 skip_rustup_check=1)
 endif
 
 ifeq ($(UNAME_O),Cygwin)

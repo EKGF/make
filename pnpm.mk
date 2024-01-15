@@ -55,8 +55,6 @@ pnpm-install-prerequisites: brew-check nodejs-check
 	$(PNPM_BIN) install -g node-gyp
 else
 pnpm-install-prerequisites:
-	@echo "Cannot install pnpm prerequisites, pnpm is not installed, run $(MAKE) pnpm-install-itself first"
-	exit 1
 endif
 
 .PHONY: pnpm-install-itself

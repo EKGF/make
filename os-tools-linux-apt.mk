@@ -113,7 +113,7 @@ linux-tools-install:
 else
 linux-tools-install: _linux-tools-install-info \
 	gcc-install \
-	llvm-install \
+	llvm-install-with-brew \
 	_linux-tool-musl \
 	_linux-tool-pkg-config \
 	_linux-tool-pango \
