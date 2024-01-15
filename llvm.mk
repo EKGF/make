@@ -42,6 +42,7 @@ ifeq ("$(wildcard $(LLVM_LIB_PATH))","")
 $(warning Directory $(LLVM_LIB_PATH) does not exist)
 endif
 
+ifdef LLVM_LIB_PATH
 # LLVM_BIN_PATH is something like: /usr/local/opt/llvm/bin/
 export LLVM_BIN_PATH := $(shell cd $(LLVM_LIB_PATH) 2>/dev/null && cd ../bin && pwd)
 #$(info LLVM_BIN_PATH=$(LLVM_BIN_PATH))
@@ -51,10 +52,16 @@ export LLVM_INC_PATH := $(shell cd $(LLVM_LIB_PATH) 2>/dev/null && cd ../include
 #$(info LLVM_INC_PATH=$(LLVM_INC_PATH))
 
 export LDFLAGS="-L$(LLVM_LIB_PATH)/c++ -Wl,-rpath,$(LLVM_LIB_PATH)/c++"
-export CPPFLAGS="-I$(LLVM_INC_PATH)"
+endif
 
+ifdef LLVM_INC_PATH
+export CPPFLAGS="-I$(LLVM_INC_PATH)"
+endif
+
+ifdef LLVM_BIN_PATH
 export CC=$(LLVM_BIN_PATH)/clang
 export CXX=$(LLVM_BIN_PATH)/clang++
+endif
 
 ifeq ($(UNAME_S),Darwin)
 export BINDGEN_EXTRA_LLVM_ARGS="-I /Library/Developer/CommandLineTools/usr/include/c++/v1 -I /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include"

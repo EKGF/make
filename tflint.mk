@@ -9,6 +9,7 @@ endif
 MK_DIR := $(GIT_ROOT)/.make
 
 include $(MK_DIR)/os.mk
+include $(MK_DIR)/make.mk
 include $(MK_DIR)/brew.mk
 
 TFLINT_BIN := $(call where-is-binary,tflint)
@@ -24,7 +25,9 @@ ifeq ($(TFLINT_VERSION),$(TFLINT_VERSION_EXPECTED))
 TFLINT_CHECKED := 1
 else
 TFLINT_CHECKED := 0
+ifeq ($(IS_MAKE_4),1)
 undefine TFLINT_BIN
+endif
 $(info terraform lint, version $(TFLINT_VERSION), does not match expected version $(TFLINT_VERSION_EXPECTED))
 endif
 

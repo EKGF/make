@@ -25,8 +25,9 @@ MK_DIR := $(GIT_ROOT)/.make
 
 include $(MK_DIR)/os.mk
 include $(MK_DIR)/brew.mk
+include $(MK_DIR)/make.mk
 include $(MK_DIR)/sops-generate.mk
-include $(GIT_ROOT)/.sops-variables.mk
+-include $(GIT_ROOT)/.sops-variables.mk
 
 SOPS_VERSION_EXPECTED := 3.8.1
 SOPS_INSTALL := 1
@@ -38,7 +39,7 @@ SOPS_KEYS_FILE := $(SOPS_KEYS_DIR)/keys.json
 
 SOPS_BIN := $(call where-is-binary,sops)
 ifndef SOPS_BIN
-$(info SOPS_BIN not found)
+$(warning SOPS_BIN not found, install Mozilla sops)
 endif
 #$(info SOPS_BIN=$(SOPS_BIN))
 
@@ -147,7 +148,9 @@ $(SOPS_EXEC):
 	exit 1
 endif
 ifeq ($(findstring undefine,$(.FEATURES)),undefine)
+ifeq ($(IS_MAKE_4),1)
 undefine SOPS_GENERATE_EXEC_SCRIPT
+endif
 endif
 
 .PHONY: sops-exec
