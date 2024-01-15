@@ -135,7 +135,6 @@ rustup-install-with-curl: curl-check
 ifdef RUSTUP_BIN
 rustup-info:
 	@printf "$(bold)Installed targets:$(normal)\n"
-	@echo RUSTUP_BIN=$(RUSTUP_BIN)
 	@$(RUSTUP_BIN) target list --installed
 	@printf "$(bold)Installed toolchains:$(normal)\n"
 	@$(RUSTUP_BIN) toolchain list
@@ -175,11 +174,11 @@ _rustup-toolchain-install-no-info:
 endif
 
 .PHONY: rustup-check
-ifdef RUSTUP_VERSION
+ifndef RUSTUP_BIN
 rustup-check:
 else
 rustup-check: rustup-install
-	@~$(RUSTUP_BIN) show
+	@$(RUSTUP_BIN) show
 endif
 
 .PHONY: rustup-update
