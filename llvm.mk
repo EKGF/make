@@ -90,10 +90,10 @@ ifeq ($(LLVM_CHECKED),1)
 llvm-check:
 	@echo "Using LLVM $(LLVM_VERSION)"
 else
-llvm-check: llvm-install
+llvm-check: llvm-install-with-brew
 endif
 else
-llvm-check: llvm-install
+llvm-check: llvm-install-with-brew
 endif
 
 ifdef CLANG_BIN
@@ -107,8 +107,8 @@ $(TMP_DIR)/llvm:
 	exit 1
 endif
 
-.PHONY: llvm-install
-llvm-install: brew-check
+.PHONY: llvm-install-with-brew
+llvm-install-with-brew: brew-check
 	$(BREW_BIN) install --overwrite llvm@$(LLVM_MAIN_VERSION_EXPECTED)
 	$(BREW_BIN) unlink llvm@$(LLVM_MAIN_VERSION_EXPECTED)
 	$(BREW_BIN) link --force --overwrite llvm@$(LLVM_MAIN_VERSION_EXPECTED)
@@ -117,7 +117,7 @@ llvm-install: brew-check
 clang-check: llvm-check
 
 .PHONY: clang-install
-clang-install: llvm-install
+clang-install: llvm-install-with-brew
 
 #$(info <--- .make/llvm.mk)
 

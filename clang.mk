@@ -30,11 +30,11 @@ CLANG_MAIN_VERSION_EXPECTED := 17
 
 .PHONY: clang-check
 ifndef CLANG_VERSION
-clang-check: llvm-install
+clang-check: clang-install
 else
 ifneq ($(CLANG_MAIN_VERSION),$(CLANG_MAIN_VERSION_EXPECTED))
 $(info CLANG_MAIN_VERSION ($(CLANG_MAIN_VERSION)) is not equal to CLANG_MAIN_VERSION_EXPECTED ($(CLANG_MAIN_VERSION_EXPECTED)))
-clang-check: llvm-install
+clang-check: clang-install
 else
 #$(info CLANG_MAIN_VERSION is equal to CLANG_MAIN_VERSION_EXPECTED)
 CLANG_INSTALL := 0
@@ -83,28 +83,28 @@ $(info LIBCLANG_PATH=$(LIBCLANG_PATH))
 LLVM_VERSION := $(shell "$(LIBCLANG_BIN_PATH)/llvm-config" --version 2>/dev/null)
 $(info LLVM_VERSION=$(LLVM_VERSION))
 
-.PHONY: llvm-install
+.PHONY: clang-install
 ifeq ($(CLANG_INSTALL),0)
-llvm-install:
+clang-install:
 else
-.INTERMEDIATE: ./llvm-install.sh
-./llvm-install.sh: curl-check
+.INTERMEDIATE: ./clang-install.sh
+./clang-install.sh: curl-check
 	@echo "Downloading LLVM install script:"
-	$(CURL_BIN) -fsSL https://apt.llvm.org/llvm.sh > ./llvm-install.sh
-	chmod u+x ./llvm-install.sh
+	$(CURL_BIN) -fsSL https://apt.llvm.org/llvm.sh > ./clang-install.sh
+	chmod u+x ./clang-install.sh
 
 ifeq ($(UNAME_S),Windows)
-llvm-install:
+clang-install:
 else
 ifeq ($(UNAME_S),Darwin)
-llvm-install: brew-check
+clang-install: brew-check
 	@if [ ! -d $(HOMEBREW_CELLAR)/z3/4.12.* ] ; then $(BREW_BIN) install z3 ; else echo "z3 4.12.* is already installed" ; fi
 	@if [ ! -d $(HOMEBREW_CELLAR)/llvm/16.* ] ; then $(BREW_BIN) install llvm ; else echo "llvm 16.* is already installed" ; fi
 	@if [ ! -d $(HOMEBREW_CELLAR)/protobuf/23.* ] ; then $(BREW_BIN) install protobuf ; else echo "protobuf 23.* is already installed" ; fi
 else # anything else: linux
-llvm-install: ./llvm-install.sh
+clang-install: ./clang-install.sh
 	@echo "Executing LLVM install script"
-	sudo ./llvm-install.sh $(CLANG_MAIN_VERSION_EXPECTED)
+	sudo ./clang-install.sh $(CLANG_MAIN_VERSION_EXPECTED)
 	@echo "LLVM install script finished successfully"
 	clang-$(CLANG_MAIN_VERSION_EXPECTED) --version
 	@echo "LLVM version $(CLANG_MAIN_VERSION_EXPECTED) has been installed"
