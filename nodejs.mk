@@ -25,6 +25,11 @@ NODEJS_CHECKED := 0
 $(info NodeJS version $(NODEJS_VERSION) does not match expected version $(NODEJS_VERSION_EXPECTED))
 endif
 
+COREPACK_BIN := $(call where-is-binary,corepack)
+ifndef COREPACK_BIN
+NODEJS_CHECKED := 0
+endif
+
 .PHONY: nodejs-check
 ifdef NODEJS_BIN
 ifeq ($(NODEJS_CHECKED),1)
@@ -53,6 +58,9 @@ nodejs-install: brew-check
 	$(BREW_BIN) install --overwrite node@$(NODEJS_MAIN_VERSION_EXPECTED)
 	$(BREW_BIN) unlink node@$(NODEJS_MAIN_VERSION_EXPECTED)
 	$(BREW_BIN) link --force --overwrite node@$(NODEJS_MAIN_VERSION_EXPECTED)
+	# We have to unlink pnpm here because otherwise corepack installation may fail
+	$(BREW_BIN) unlink pnpm
+	$(BREW_BIN) install corepack
 
 #$(info <--- .make/nodejs.mk)
 

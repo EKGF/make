@@ -15,6 +15,13 @@ include $(MK_DIR)/os.mk
 include $(MK_DIR)/curl.mk
 include $(MK_DIR)/nodejs.mk
 
+ifndef PNPM_HOME
+export PNPM_HOME := $(HOME)/Library/pnpm
+export PATH2 := $(PATH):$(PNPM_HOME)
+export PATH := $(PATH2)
+undefine PATH2
+endif
+
 NPM_BIN := $(call where-is-binary,npm)
 PNPM_BIN := $(call where-is-binary,pnpm)
 
@@ -45,14 +52,15 @@ endif
 
 .PHONY: pnpm-install-itself-first
 pnpm-install-itself-first: brew-check nodejs-check
-	@$(BREW_BIN) install --force pnpm
-	@$(BREW_BIN) unlink pnpm
-	@$(BREW_BIN) link --force pnpm
+	@printf "Installing $(bold)$(green)pnpm $(PNPM_VERSION_EXPECTED)$(normal) with corepack:\n"
+	$(COREPACK_BIN) install --global pnpm@$(PNPM_VERSION_EXPECTED)
+	$(COREPACK_BIN) prepare pnpm@$(PNPM_VERSION_EXPECTED) --activate
+	@printf "Installed $(bold)$(green)pnpm $(PNPM_VERSION_EXPECTED)$(normal)\n"
 
 .PHONY: pnpm-install-prerequisites
 ifdef PNPM_BIN
 pnpm-install-prerequisites: brew-check nodejs-check
-	$(PNPM_BIN) install -g node-gyp
+	set -x ; $(PNPM_BIN) install -g node-gyp
 else
 pnpm-install-prerequisites:
 endif
