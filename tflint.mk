@@ -13,9 +13,6 @@ include $(MK_DIR)/make.mk
 include $(MK_DIR)/brew.mk
 
 TFLINT_BIN := $(call where-is-binary,tflint)
-ifndef TFLINT_BIN
-$(info TFLINT_BIN not found)
-endif
 
 ifdef TFLINT_BIN
 TFLINT_VERSION := $(shell $(TFLINT_BIN) --version 2>/dev/null | head -n1 | cut -d\  -f3)
@@ -28,7 +25,11 @@ TFLINT_CHECKED := 0
 ifeq ($(IS_MAKE_4),1)
 undefine TFLINT_BIN
 endif
+ifdef TFLINT_BIN
 $(info terraform lint, version $(TFLINT_VERSION), does not match expected version $(TFLINT_VERSION_EXPECTED))
+else
+$(info terraform lint not installed)
+endif
 endif
 
 .PHONY: tflint-check

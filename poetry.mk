@@ -63,29 +63,48 @@ poetry-clean:
 	rm -rf $(GIT_ROOT)/.venv
 
 .PHONY: poetry-lock-no-update
+ifdef POETRY_BIN
 poetry-lock-no-update: poetry-check
 	$(POETRY_BIN) lock --no-update
+else
+poetry-lock-no-update:
+endif
 
 .PHONY: poetry-config-update
+ifdef POETRY_BIN
 poetry-config-update: poetry-check
 	$(POETRY_BIN) config experimental.new-installer true
 	$(POETRY_BIN) config --local installer.no-binary :all:
+else
+poetry-config-update:
+endif
 
 .PHONY: poetry-config-list
+ifdef POETRY_BIN
 poetry-config-list: poetry-check
 	@$(POETRY_BIN) config --list
+else
+poetry-config-list:
+endif
 
 .PHONY: poetry-install
+ifdef POETRY_BIN
 poetry-install: poetry-check pipx-check $(TMP_DIR)/python3
 	@printf "Installing python packages with poetry:\n"
 	@PATH=$(TMP_DIR):$${PATH} $(POETRY_BIN) add --group dev pytest@latest || true
 	@PATH=.venv/bin:$(TMP_DIR):$${PATH} $(POETRY_BIN) install || true
 	@printf "Python packages have been installed with poetry\n"
+else
+poetry-install:
+endif
 
 .PHONY: poetry-update
+ifdef POETRY_BIN
 poetry-update: poetry-check
 	@$(POETRY_BIN) update || true
-
+else
+poetry-update:
+endif
 #$(info <--- .make/poetry.mk)
 
 endif # _MK_POETRY_MK_

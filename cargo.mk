@@ -57,6 +57,7 @@ else
 endif
 
 ifneq ($(skip_cargo_check),1)
+$(info Checking Cargo)
 ifeq ($(CARGO_HOME),)
 ifeq ($(USE_USERPROFILE_AS_HOME),1)
 CARGO_HOME := $(shell cygpath --windows "$(USERPROFILE)\\.cargo")
@@ -83,9 +84,9 @@ CARGO_HOME := $(shell cygpath --windows "$(CARGO_HOME)")
 endif
 
 ifneq ("$(wildcard $(CARGO_HOME)/bin/cargo)","")
-CARGO_BIN := $(call where-is-binary,cargo)
-else
 CARGO_BIN := $(CARGO_HOME)/bin/cargo
+else
+CARGO_BIN := $(call where-is-binary,cargo)
 endif
 
 # Since "sops exec-env" does not seem to work with fully qualified path names
@@ -95,14 +96,16 @@ CARGO_BIN := cargo
 endif
 
 #$(info UNAME_O=$(UNAME_O))
-#$(info CARGO_HOME=$(CARGO_HOME))
-#$(info CARGO_BIN=$(CARGO_BIN))
+$(info CARGO_HOME=$(CARGO_HOME))
+$(info CARGO_BIN=$(CARGO_BIN))
 
 ifdef CARGO_BIN
 CARGO_VERSION := $(shell $(CARGO_BIN) --version 2>/dev/null)
 else
 $(warning Cargo is not installed)
 endif
+else
+$(info skipped cargo check)
 endif
 
 ifdef release
@@ -161,6 +164,9 @@ cargo-check:
 else
 cargo-check: rustup-check
 endif
+
+.PHONY: cargo-install
+cargo-install: rustup-check cargo-install-components
 
 .PHONY: cargo-install-components
 cargo-install-components: rustup-check cargo-extensions

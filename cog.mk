@@ -42,9 +42,14 @@ else
 cog-check: cog-install
 endif
 
+ifdef CARGO_BIN
 cog-install: cargo-check jq-check
 	@echo "Installing Cocogitto by building it from source:"
 	$(CARGO_BIN) +stable install --locked --version "^$(COG_VERSION_EXPECTED)" cocogitto
+else
+cog-install: cargo-install
+	set -x ; $(MAKE) cog-install
+endif
 
 # Bump the version number of the whole repo
 cog-bump: cog-check jq-check

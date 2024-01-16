@@ -93,7 +93,13 @@ BSDTAR := bsdtar
 endif
 endif
 
-#$(info UNAME_M=$(UNAME_M) UNAME_S_lc=$(UNAME_S_lc) UNAME_S=$(UNAME_S) UNAME_O=$(UNAME_O) OS=[$(OS)])
+$(info UNAME_M=$(UNAME_M) UNAME_S_lc=$(UNAME_S_lc) UNAME_S=$(UNAME_S) UNAME_O=$(UNAME_O) OS=[$(OS)])
+
+ifeq ($(UNAME_M),arm64)
+UNAME_M_rust := aarch64
+else
+UNAME_M_rust := $(UNAME_M)
+endif
 
 ifeq ($(AWS_EXECUTION_ENV),CloudShell)
 RUNNING_IN_CLOUDSHELL := 1
@@ -146,9 +152,17 @@ define check-file
 $(shell mkdir -p $(shell echo $$(dirname $1)) >/dev/null 2>&1 && echo $1)
 endef
 
+ifeq ($(UNAME_O),Cygwin)
+define where-is-binary
+$(shell cygpath --windows $1)
+endef
+endif
+
+ifneq ($(UNAME_O),Cygwin)
 define where-is-binary
 $(shell command -v $1 2>/dev/null)
 endef
+endif
 
 define command-exists
 $(shell command -v $1 2>/dev/null)

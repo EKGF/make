@@ -22,7 +22,11 @@ ifeq ($(TERRAGRUNT_VERSION),$(TERRAGRUNT_VERSION_EXPECTED))
 TERRAGRUNT_CHECKED := 1
 else
 TERRAGRUNT_CHECKED := 0
+ifdef TERRAGRUNT_BIN
 $(info terragrunt version $(TERRAGRUNT_VERSION) does not match expected version $(TERRAGRUNT_VERSION_EXPECTED))
+else
+$(info terragrunt not installed)
+endif
 endif
 
 .PHONY: terragrunt-check

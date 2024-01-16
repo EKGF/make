@@ -10,15 +10,15 @@ MK_DIR := $(GIT_ROOT)/.make
 
 ifndef RUST_TARGET
 ifeq ($(UNAME_S),Windows)
-RUST_TARGET := $(UNAME_M)-pc-windows-msvc
+RUST_TARGET := $(UNAME_M_rust)-pc-windows-msvc
 RUST_TARGET_OS := windows
 else
 ifeq ($(UNAME_S),Linux)
-RUST_TARGET := $(UNAME_M)-unknown-linux-gnu
+RUST_TARGET := $(UNAME_M_rust)-unknown-linux-gnu
 RUST_TARGET_OS := linux
 else
 ifeq ($(UNAME_S),Darwin)
-RUST_TARGET := $(UNAME_M)-apple-darwin
+RUST_TARGET := $(UNAME_M_rust)-apple-darwin
 RUST_TARGET_OS := darwin
 else
 $(error Unknown operating system $(UNAME_S))

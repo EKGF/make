@@ -43,6 +43,7 @@ endif
 
 ifeq ($(RUSTUP_HOME),)
 $(warning Could not find rustup home, define RUSTUP_HOME)
+export RUSTUP_HOME := $(HOME)/.rustup
 $(info $(MAKE) --no-print-directory --environment-overrides --no-builtin-rules rustup-install skip_rustup_check=1 skip_cargo_check=1)
 $(shell $(MAKE) --no-print-directory --environment-overrides --no-builtin-rules rustup-install skip_rustup_check=1 skip_cargo_check=1)
 endif
@@ -57,10 +58,33 @@ endif
 endif
 endif
 
-ifeq ($(UNAME_O),Cygwin)
-RUSTUP_BIN := $(shell cygpath --windows $(RUSTUP_BIN))
+RUSTUP_BIN := $(call where-is-binary,rustup)
+# if not found look in the obvious places
+ifndef RUSTUP_BIN
+ifneq ("$(wildcard $(HOME)/.cargo/bin/rustup)","")
+RUSTUP_BIN := $(HOME)/.cargo/bin/rustup
 else
-RUSTUP_BIN := $(shell command -v rustup 2>/dev/null)
+ifneq ("$(wildcard $(HOME)/.rustup/bin/rustup)","")
+RUSTUP_BIN := $(HOME)/.rustup/bin/rustup
+endif
+endif
+endif
+
+RUSTUP_INIT_BIN := $(call where-is-binary,rustup-init)
+# if not found look in the obvious places
+ifndef RUSTUP_INIT_BIN
+ifneq ("$(wildcard $(HOME)/.cargo/bin/rustup-init)","")
+RUSTUP_INIT_BIN := $(HOME)/.cargo/bin/rustup-init
+else
+ifneq ("$(wildcard $(HOME)/.rustup/bin/rustup-init)","")
+RUSTUP_INIT_BIN := $(HOME)/.rustup/bin/rustup-init
+else
+ifneq ("$(wildcard /opt/homebrew/bin/rustup-init)","")
+RUSTUP_INIT_BIN := /opt/homebrew/bin/rustup-init
+endif
+endif
+endif
+else
 endif
 
 ifneq ($(RUSTUP_BIN),)
@@ -69,22 +93,26 @@ endif
 
 ifeq ($(UNAME_O),Windows)
 RUSTUP_ALL_TARGETS := $(RUST_TARGET) wasm32-unknown-unknown
+RUSTUP_ALL_TARGETS_STABLE := $(RUST_TARGET) wasm32-unknown-unknown
 else
 ifeq ($(UNAME_O),GNU/Linux)
-RUSTUP_ALL_TARGETS := $(RUST_TARGET) wasm32-unknown-unknown x86_64-unknown-linux-musl x86_64-unknown-linux-gnu
+RUSTUP_ALL_TARGETS := $(RUST_TARGET) wasm32-unknown-unknown $(UNAME_M_rust)-unknown-linux-musl $(UNAME_M)-unknown-linux-gnu
+RUSTUP_ALL_TARGETS_STABLE := $(RUST_TARGET) wasm32-unknown-unknown $(UNAME_M_rust)-unknown-linux-musl $(UNAME_M)-unknown-linux-gnu
 else
 #$(info unrecognized UNAME_O: $(UNAME_O))
 RUSTUP_ALL_TARGETS := $(RUST_TARGET) \
 					  wasm32-unknown-unknown \
-					  x86_64-unknown-linux-musl \
-					  x86_64-unknown-linux-gnu \
-					  x86_64-apple-darwin
+					  $(UNAME_M_rust)-unknown-linux-musl \
+					  $(UNAME_M_rust)-unknown-linux-gnu \
+					  $(UNAME_M_rust)-apple-darwin
+RUSTUP_ALL_TARGETS_STABLE := $(RUST_TARGET) wasm32-unknown-unknown
 endif
 endif
 
-#$(info RUSTUP_BIN=$(RUSTUP_BIN))
-#$(info RUSTUP_VERSION=$(RUSTUP_VERSION))
-#$(info RUSTUP_TOOLCHAIN=$(RUSTUP_TOOLCHAIN))
+$(info RUSTUP_BIN=$(RUSTUP_BIN))
+$(info RUSTUP_INIT_BIN=$(RUSTUP_INIT_BIN))
+$(info RUSTUP_VERSION=$(RUSTUP_VERSION))
+$(info RUSTUP_TOOLCHAIN=$(RUSTUP_TOOLCHAIN))
 
 .PHONY: rustup-install
 ifdef RUSTUP_BIN
@@ -98,10 +126,14 @@ endif
 
 .PHONY: rustup-install-info-before
 rustup-install-info-before:
-	@echo "Installing Rust"
-
+	@printf "$(bold)Installing Rust:$(normal)\n"
 
 .PHONY: rustup-init-install-with-brew
+ifdef RUSTUP_INIT_BIN
+rustup-init-install-with-brew: brew-check
+	@printf "$(bold)rustup-init-install-with-brew:$(normal)\n"
+	$(BREW_BIN) install rustup-init
+else
 rustup-init-install-with-brew: brew-check
 	@printf "$(bold)rustup-init-install-with-brew:$(normal)\n"
 	@if ! command -v rustup-init ; then \
@@ -121,6 +153,7 @@ rustup-init-install-with-brew: brew-check
 #  		--target $(RUSTUP_ALL_TARGETS) \
 #  		--profile default
 	@echo "****** Rustup, rust, cargo etc. have been installed ******"
+endif
 
 .PHONY: rustup-install-with-curl
 rustup-install-with-curl: curl-check
@@ -141,7 +174,7 @@ rustup-info:
 	@printf "$(bold)Installed toolchains:$(normal)\n"
 	@$(RUSTUP_BIN) toolchain list
 	@printf "$(bold)Active toolchain:$(normal)\n"
-	@~$(RUSTUP_BIN) show
+	@$(RUSTUP_BIN) show
 else
 rustup-info:
 endif
@@ -153,26 +186,55 @@ rustup-toolchain-install: _rustup-toolchain-install-no-info rustup-info
 ifdef RUSTUP_BIN
 _rustup-toolchain-install-no-info:
 	@printf "$(bold)rustup-toolchain-install:$(normal)\n"
-	@$(RUSTUP_BIN) toolchain install \
-		stable \
-		--target $(RUSTUP_ALL_TARGETS) \
-		--profile default \
-		--allow-downgrade \
-		--force-non-host
+	@printf "Installing rust via rustup\n"
+	@if [[ "$(RUSTUP_TOOLCHAIN)" == "stable" ]] ; then \
+  		echo "RUSTUP_ALL_TARGETS_STABLE=$(RUSTUP_ALL_TARGETS_STABLE)" ; \
+		RUSTUP_INIT_SKIP_PATH_CHECK=yes $(RUSTUP_BIN) toolchain install \
+			stable \
+			--target $(RUSTUP_ALL_TARGETS_STABLE) \
+			--profile default \
+			--allow-downgrade \
+			--force-non-host ; \
+	else \
+		RUSTUP_INIT_SKIP_PATH_CHECK=yes $(RUSTUP_BIN) toolchain install \
+			$(RUSTUP_TOOLCHAIN) \
+			--target $(RUSTUP_ALL_TARGETS) \
+			--profile default \
+			--allow-downgrade \
+			--force-non-host ; \
+	fi
 	@$(RUSTUP_BIN) toolchain install \
 		nightly \
 		--target $(RUSTUP_ALL_TARGETS) \
 		--profile default \
 		--allow-downgrade \
 		--force-non-host
-	@$(RUSTUP_BIN) toolchain install \
-		$(RUSTUP_TOOLCHAIN) \
-		--target $(RUSTUP_ALL_TARGETS) \
-		--profile default \
-		--allow-downgrade \
-		--force-non-host
+
+ifdef RUSTUP_INIT_BIN
+_rustup-toolchain-install-no-info:
+	@printf "$(bold)rustup-toolchain-install:$(normal)\n"
+	@printf "Installing rust via rustup-init\n"
+	@if [[ "$(RUSTUP_TOOLCHAIN)" == "stable" ]] ; then \
+  		echo "RUSTUP_ALL_TARGETS_STABLE=$(RUSTUP_ALL_TARGETS_STABLE)" ; \
+  		RUSTUP_INIT_SKIP_PATH_CHECK=yes $(RUSTUP_INIT_BIN) \
+  			--quiet -y \
+  			--no-update-default-toolchain \
+  			--default-toolchain $(RUSTUP_TOOLCHAIN) \
+  			--target $(RUSTUP_ALL_TARGETS_STABLE) \
+  			--profile default ; \
+  	else \
+  		echo "RUSTUP_ALL_TARGETS=$(RUSTUP_ALL_TARGETS)" ; \
+		RUSTUP_INIT_SKIP_PATH_CHECK=yes $(RUSTUP_INIT_BIN) \
+			--quiet -y \
+			--no-update-default-toolchain \
+			--default-toolchain $(RUSTUP_TOOLCHAIN) \
+			--target $(RUSTUP_ALL_TARGETS) \
+			--profile default ; \
+	fi
 else
 _rustup-toolchain-install-no-info:
+	$echo "ERROR: rustup-init is not installed, run $(MAKE) rustup-init-install-with-brew"
+endif
 endif
 
 .PHONY: rustup-check

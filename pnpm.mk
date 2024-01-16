@@ -28,7 +28,7 @@ PNPM_BIN := $(call where-is-binary,pnpm)
 ifdef PNPM_BIN
 PNPM_VERSION := $(shell $(PNPM_BIN) --version 2>/dev/null | cut -d\  -f2)
 endif
-PNPM_VERSION_EXPECTED := 8.12.1
+PNPM_VERSION_EXPECTED := 8.14.1
 ifeq ($(PNPM_VERSION),$(PNPM_VERSION_EXPECTED))
 PNPM_CHECKED := 1
 else
