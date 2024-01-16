@@ -32,7 +32,11 @@ ifndef LLVM_LIB_PATH
 ifdef LLVM_PATH
 LLVM_LIB_PATH := $(LLVM_PATH)
 else
+ifneq ($(wildcard $(HOMEBREW_PREFIX)/opt/llvm/lib),)
+LLVM_LIB_PATH := $(HOMEBREW_PREFIX)/opt/llvm/lib
+else
 LLVM_LIB_PATH := /usr/local/opt/llvm/lib
+endif
 endif
 endif
 
@@ -71,10 +75,6 @@ endif
 ifeq ($(UNAME_S),Darwin)
 export BINDGEN_EXTRA_LLVM_ARGS="-I /Library/Developer/CommandLineTools/usr/include/c++/v1 -I /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include"
 endif
-
-#$(info LLVM_LIB_PATH=$(LLVM_LIB_PATH))
-
-#$(info LLVM_PATH=$(LLVM_PATH))
 
 CLANG_BIN := $(call where-is-binary,clang)
 

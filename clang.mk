@@ -16,14 +16,13 @@ include $(MK_DIR)/os-tools-*.mk
 include $(MK_DIR)/rustup.mk
 include $(MK_DIR)/brew.mk
 include $(MK_DIR)/curl.mk
-
-$(info LLVM_PATH=$(LLVM_PATH))
+include $(MK_DIR)/llvm.mk
 
 CLANG_VERSION := $(shell clang --version 2>/dev/null | head -n1 | cut -d\  -f4)
 ifdef CLANG_VERSION
-$(info CLANG_VERSION=$(CLANG_VERSION))
+#$(info CLANG_VERSION=$(CLANG_VERSION))
 CLANG_MAIN_VERSION := $(shell echo $(CLANG_VERSION) | cut -d. -f1)
-$(info CLANG_MAIN_VERSION=$(CLANG_MAIN_VERSION))
+#$(info CLANG_MAIN_VERSION=$(CLANG_MAIN_VERSION))
 else
 $(warning LLVM CLANG is not installed)
 endif
@@ -46,8 +45,8 @@ endif
 endif
 
 ifndef LIBCLANG_PATH
-ifdef LLVM_PATH
-LIBCLANG_PATH := $(LLVM_PATH)
+ifdef LLVM_LIB_PATH
+LIBCLANG_PATH := $(LLVM_LIB_PATH)
 else
 LIBCLANG_PATH := /usr/local/opt/llvm/lib
 endif
@@ -59,7 +58,7 @@ $(warning LIBCLANG_PATH is not defined)
 endif
 
 ifeq ("$(wildcard $(LIBCLANG_PATH))","")
-$(info "Directory $(LIBCLANG_PATH) does not exist")
+$(info Directory LIBCLANG_PATH=$(LIBCLANG_PATH) does not exist)
 endif
 
 # LIBCLANG_BIN_PATH is something like: /usr/local/opt/llvm/bin/

@@ -29,7 +29,11 @@ ifeq ($(COG_VERSION),$(COG_VERSION_EXPECTED))
 COG_CHECKED := 1
 else
 COG_CHECKED := 0
+ifdef COG_VERSION
 $(info Cocogitto version $(COG_VERSION) does not match expected version $(COG_VERSION_EXPECTED))
+else
+$(info Cocogitto is not installed, use $(MAKE) cog-install)
+endif
 endif
 
 .PHONY: cog-check
@@ -49,7 +53,7 @@ cog-install: cargo-check jq-check
 	@echo "Installing Cocogitto by building it from source:"
 	$(CARGO_BIN) +stable install --locked --version "^$(COG_VERSION_EXPECTED)" cocogitto
 else
-cog-install: cargo-install
+cog-install:
 	set -x ; $(MAKE) cog-install
 endif
 

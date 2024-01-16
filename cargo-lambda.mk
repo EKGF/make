@@ -42,27 +42,10 @@ ifeq ($(CARGO_LAMBDA_CHECKED),1)
 cargo-lambda-check:
 	@#echo "Using cargo-lambda $(CARGO_LAMBDA_VERSION)"
 else
-cargo-lambda-check: cargo-lambda-install
+cargo-lambda-check: cargo-install-cargo-lambda
 endif
 else
-cargo-lambda-check: cargo-lambda-install
-endif
-
-_cargo-lambda-install-from-source: cargo-check
-	@echo "Installing cargo-lambda by building it from source:"
-	$(CARGO_BIN) install --locked cargo-lambda
-
-.PHONY: _cargo-lambda-install-with-brew
-_cargo-lambda-install-with-brew: brew-check cargo-check
-	@echo "Installing cargo-lambda with HomeBrew:"
-	$(BREW_BIN) tap cargo-lambda/cargo-lambda
-	$(BREW_BIN) install cargo-lambda
-
-.PHONY: cargo-lambda-install
-ifeq ($(CARGO_LAMBDA_FROM_SOURCE),1)
-cargo-lambda-install: _cargo-lambda-install-from-source
-else
-cargo-lambda-install: _cargo-lambda-install-with-brew
+cargo-lambda-check: cargo-install-cargo-lambda
 endif
 
 #$(info <--- .make/cargo-lambda.mk)

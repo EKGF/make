@@ -15,7 +15,6 @@ include $(MK_DIR)/os-tools.mk
 include $(MK_DIR)/git.mk
 include $(MK_DIR)/rust-target.mk
 include $(MK_DIR)/rustup.mk
-include $(MK_DIR)/cog.mk
 include $(MK_DIR)/curl.mk
 
 ifndef RUSTUP_TOOLCHAIN
@@ -59,7 +58,6 @@ else
 endif
 
 ifneq ($(skip_cargo_check),1)
-$(info Checking Cargo)
 ifeq ($(CARGO_HOME),)
 ifeq ($(USE_USERPROFILE_AS_HOME),1)
 CARGO_HOME := $(shell cygpath --windows "$(USERPROFILE)\\.cargo")
@@ -98,8 +96,8 @@ CARGO_BIN := cargo
 endif
 
 #$(info UNAME_O=$(UNAME_O))
-$(info CARGO_HOME=$(CARGO_HOME))
-$(info CARGO_BIN=$(CARGO_BIN))
+#$(info CARGO_HOME=$(CARGO_HOME))
+#$(info CARGO_BIN=$(CARGO_BIN))
 
 ifdef CARGO_BIN
 CARGO_VERSION := $(shell $(CARGO_BIN) --version 2>/dev/null)
@@ -175,16 +173,20 @@ cargo-install-components: rustup-check cargo-extensions
 
 .PHONY: cargo-extensions
 cargo-extensions: rustup-check \
-	cog-check \
+	cargo-install-cocogitto \
 	cargo-install-cargo-lambda \
 	cargo-install-cargo-outdated \
 	cargo-install-cargo-cache \
 	cargo-install-cargo-edit \
 	cargo-install-cargo-upgrades \
-	cargo-install-cargo-udeps \
 	cargo-install-wasm-pack \
 	cargo-install-wasm-bindgen-cli \
 	cargo-install-wasm2map
+
+.PHONY: cargo-install-cocogitto
+cargo-install-cocogitto:
+	@echo Install Cocogitto
+	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cocogitto --force
 
 .PHONY: cargo-install-cargo-lambda
 cargo-install-cargo-lambda: zig-install
@@ -212,11 +214,6 @@ cargo-install-cargo-cache: cargo-install-cargo-outdated
 cargo-install-cargo-outdated:
 	@echo Install Cargo Outdated
 	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-outdated --force
-
-.PHONY: cargo-install-cargo-udeps
-cargo-install-cargo-udeps:
-	@echo Install Cargo UDeps
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-udeps --force
 
 .PHONY: cargo-install-wasm-pack
 cargo-install-wasm-pack:

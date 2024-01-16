@@ -23,7 +23,6 @@ right order.
 - [HomeBrew](./brew.mk)
 - [Cargo](./cargo.mk)
 - [LLVM / Clang](./llvm.mk)
-- [Cocogitto](./cog.mk)
 - [Curl](./curl.mk)
 - [Docker](./docker.mk)
 - [Git](./git.mk)

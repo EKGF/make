@@ -1,12 +1,7 @@
-#
-# All the cog / Cocogitto related stuff
-#
-# See https://docs.cocogitto.io
-#
 ifndef _MK_NEXTJS_MK_
 _MK_NEXTJS_MK_ := 1
 
-#$(info ---> .make/cog.mk)
+#$(info ---> .make/nextjs.mk)
 
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
@@ -61,6 +56,6 @@ shadcn-update: shadcn-cli-install
 	@echo "Updating all shadcn-ui components"
 	@$(PNPM_BIN) exec shadcn-ui add --yes --overwrite --cwd $(GIT_ROOT) --all
 
-#$(info <--- .make/cog.mk)
+#$(info <--- .make/nextjs.mk)
 
 endif # _MK_NEXTJS_MK_

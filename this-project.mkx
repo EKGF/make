@@ -17,7 +17,6 @@ include $(MK_DIR)/oxigraph-transform.mk
 include $(MK_DIR)/use-case.mk
 include $(MK_DIR)/pnpm.mk
 include $(MK_DIR)/amplify.mk
-include $(MK_DIR)/cog.mk
 include $(MK_DIR)/jq.mk
 include $(MK_DIR)/rustup.mk
 include $(MK_DIR)/asdf.mk
@@ -63,14 +62,6 @@ load: oxigraph-load
 .PHONY: ui-run
 ui-run: pnpm-run-dev
 
-#
-# Bump the version number of this project.
-# (This is a shortcut for "make cog-bump")
-# (It only updates the patch number, not the minor or major number,
-# so version 1.1.1 becomes 1.1.2, use the cog utility manually for minor or major bumps)
-#
-.PHONY: bump
-bump: cog-bump
 
 #
 # Install all the tools needed to run this project.
