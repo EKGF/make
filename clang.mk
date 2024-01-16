@@ -6,7 +6,9 @@ $(info ---> .make/clang.mk)
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 endif
+ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
+endif
 
 include $(MK_DIR)/os.mk
 include $(MK_DIR)/git.mk

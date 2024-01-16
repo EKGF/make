@@ -4,7 +4,9 @@ _MK_OS_TOOLS_LINUX_CLOUDSHELL_MK_ := 1
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 endif
+ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
+endif
 
 .PHONY: cloudshell-install
 cloudshell-install: _cloudshell-install-info _cloudshell-install-yum-basics

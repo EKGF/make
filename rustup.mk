@@ -6,7 +6,9 @@ _MK_RUSTUP_MK_ := 1
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 endif
+ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
+endif
 
 include $(MK_DIR)/os.mk
 include $(MK_DIR)/rust-target.mk
@@ -109,10 +111,10 @@ RUSTUP_ALL_TARGETS_STABLE := $(RUST_TARGET) wasm32-unknown-unknown
 endif
 endif
 
-$(info RUSTUP_BIN=$(RUSTUP_BIN))
-$(info RUSTUP_INIT_BIN=$(RUSTUP_INIT_BIN))
-$(info RUSTUP_VERSION=$(RUSTUP_VERSION))
-$(info RUSTUP_TOOLCHAIN=$(RUSTUP_TOOLCHAIN))
+#$(info RUSTUP_BIN=$(RUSTUP_BIN))
+#$(info RUSTUP_INIT_BIN=$(RUSTUP_INIT_BIN))
+#$(info RUSTUP_VERSION=$(RUSTUP_VERSION))
+#$(info RUSTUP_TOOLCHAIN=$(RUSTUP_TOOLCHAIN))
 
 .PHONY: rustup-install
 ifdef RUSTUP_BIN
@@ -209,7 +211,7 @@ _rustup-toolchain-install-no-info:
 		--profile default \
 		--allow-downgrade \
 		--force-non-host
-
+else
 ifdef RUSTUP_INIT_BIN
 _rustup-toolchain-install-no-info:
 	@printf "$(bold)rustup-toolchain-install:$(normal)\n"

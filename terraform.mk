@@ -6,8 +6,10 @@ _MK_TERRAFORM_MK_ := 1
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 endif
-MK_DIR := $(GIT_ROOT)/.make
 ifndef MK_DIR
+MK_DIR := $(GIT_ROOT)/.make
+endif
+ifndef TF_DIR
 TF_DIR := ./terraform
 endif
 

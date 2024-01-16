@@ -11,7 +11,9 @@ _MK_AZURE_FUNC_MK_ := 1
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 endif
+ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
+endif
 
 AZURE_FUNC_VERSION_MAJOR := 4
 AZURE_FUNC_VERSION := $(shell func --version 2>/dev/null)

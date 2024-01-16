@@ -6,7 +6,9 @@ _MK_AZURE_AXCOPY_MK_ := 1
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 endif
+ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
+endif
 
 AZURE_AZCOPY_BIN := $(call where-is-binary,azcopy)
 

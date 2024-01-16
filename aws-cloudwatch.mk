@@ -6,7 +6,9 @@ _MK_AWS_CLOUDWATCH_MK_ := 1
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 endif
+ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
+endif
 
 include $(MK_DIR)/aws.mk
 include $(MK_DIR)/jq.mk

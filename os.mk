@@ -28,7 +28,9 @@ export SHELL := $(SHELL)
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 endif
+ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
+endif
 
 ifeq ($(shell uname -r | cut -d- -f4),WSL2)
 WSL := 1
@@ -93,7 +95,7 @@ BSDTAR := bsdtar
 endif
 endif
 
-$(info UNAME_M=$(UNAME_M) UNAME_S_lc=$(UNAME_S_lc) UNAME_S=$(UNAME_S) UNAME_O=$(UNAME_O) OS=[$(OS)])
+#$(info UNAME_M=$(UNAME_M) UNAME_S_lc=$(UNAME_S_lc) UNAME_S=$(UNAME_S) UNAME_O=$(UNAME_O) OS=[$(OS)])
 
 ifeq ($(UNAME_M),arm64)
 UNAME_M_rust := aarch64

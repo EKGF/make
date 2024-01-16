@@ -6,7 +6,9 @@ _MK_MAKE_MK_ := 1
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 endif
+ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
+endif
 
 ifndef MK_TAR_DIR
 MK_TAR_DIR := $(HOME)/.tmp

@@ -6,7 +6,9 @@ _MK_DOCKER_MK_ := 1
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 endif
+ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
+endif
 
 ORB_STACK_HOME := $(HOME)/.orbstack
 ORB_STACK_BIN_DIR := $(ORB_STACK_HOME)/bin

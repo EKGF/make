@@ -12,22 +12,20 @@ _MK_ENABLE_DOWNLOAD_ := 1
 
 MK_TAR_DIR := $(HOME)/.tmp
 MK_TAR := $(MK_TAR_DIR)/make.tar.gz
-ifndef MK_DIR
 ifdef GIT_ROOT
-MK_DIR := $(GIT_ROOT)/.make
 ifneq ("$(wildcard $(GIT_ROOT)/../make)","")
 # If the EKGF make repository is cloned in sibling directory of the current repo, and that sibling directory is
 # simply called "make" then we assume its a clone of the EKGF make repo.
-MK_DIR := $(GIT_ROOT)/../make
+MK_DIR := $(shell cd $(GIT_ROOT)/../make && pwd -P)
 _MK_ENABLE_DOWNLOAD_ := 0
+$(info Found EKGF make repo in $(MK_DIR) so we are using those make files then)
+else
+MK_DIR := $(GIT_ROOT)/.make
+$(info Did not find EKGF make repo clone in $(GIT_ROOT)/../make, assuming we need to download the make files into $(MK_DIR))
 endif
 else
+$(warning GIT_ROOT is not defined)
 MK_DIR := .make
-endif
-else
-# If MKG_DIR is defined on the command line, then we assume that it points to the
-# clone of the EKGF make repository. In that case, we don't need to download it.
-_MK_ENABLE_DOWNLOAD_ := 0
 endif
 
 MK_URL := https://github.com/EKGF/make/archive/refs/heads/main.tar.gz
