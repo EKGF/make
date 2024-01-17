@@ -17,7 +17,7 @@ include $(MK_DIR)/curl.mk
 # See https://substrate.stackexchange.com/a/9069/4489
 # Don't forget to also update /rust-toolchain.toml !!
 #RUSTUP_TOOLCHAIN := nightly-2023-08-26
-RUSTUP_TOOLCHAIN := stable
+export RUSTUP_TOOLCHAIN := stable
 
 ifneq ($(skip_rustup_check),1)
 ifeq ($(RUSTUP_HOME),)
@@ -25,16 +25,20 @@ ifeq ($(RUSTUP_HOME),)
 ifeq ($(USE_USERPROFILE_AS_HOME),1)
 RUSTUP_HOME_X := $(shell cygpath --windows "$(USERPROFILE)\\.cargo")
 ifneq ("$(wildcard $(RUSTUP_HOME_X))","")
-RUSTUP_HOME := "$(RUSTUP_HOME_X)"
+export RUSTUP_HOME := "$(RUSTUP_HOME_X)"
 else
 $(info $(RUSTUP_HOME_X) does not exist)
 endif
 RUSTUP_HOME_X :=
 else
+ifneq ("$(wildcard $(HOME)/.rustup)","")
+export RUSTUP_HOME := $(HOME)/.rustup
+else
 ifneq ("$(wildcard $(HOME)/.cargo)","")
-RUSTUP_HOME := $(HOME)/.cargo
+export RUSTUP_HOME := $(HOME)/.cargo
 else
 $(info $(HOME)/.cargo does not exist)
+endif
 endif
 endif
 endif
@@ -106,8 +110,12 @@ RUSTUP_ALL_TARGETS := $(RUST_TARGET) \
 					  wasm32-unknown-unknown \
 					  $(UNAME_M_rust)-unknown-linux-musl \
 					  $(UNAME_M_rust)-unknown-linux-gnu \
+					  aarch64-unknown-linux-gnu \
 					  $(UNAME_M_rust)-apple-darwin
-RUSTUP_ALL_TARGETS_STABLE := $(RUST_TARGET) wasm32-unknown-unknown
+RUSTUP_ALL_TARGETS_STABLE := $(RUST_TARGET) \
+                      wasm32-unknown-unknown \
+                      aarch64-unknown-linux-gnu
+
 endif
 endif
 
@@ -190,7 +198,6 @@ _rustup-toolchain-install-no-info:
 	@printf "$(bold)rustup-toolchain-install:$(normal)\n"
 	@printf "Installing rust via rustup\n"
 	@if [[ "$(RUSTUP_TOOLCHAIN)" == "stable" ]] ; then \
-  		echo "RUSTUP_ALL_TARGETS_STABLE=$(RUSTUP_ALL_TARGETS_STABLE)" ; \
 		RUSTUP_INIT_SKIP_PATH_CHECK=yes $(RUSTUP_BIN) toolchain install \
 			stable \
 			--target $(RUSTUP_ALL_TARGETS_STABLE) \
@@ -217,7 +224,6 @@ _rustup-toolchain-install-no-info:
 	@printf "$(bold)rustup-toolchain-install:$(normal)\n"
 	@printf "Installing rust via rustup-init\n"
 	@if [[ "$(RUSTUP_TOOLCHAIN)" == "stable" ]] ; then \
-  		echo "RUSTUP_ALL_TARGETS_STABLE=$(RUSTUP_ALL_TARGETS_STABLE)" ; \
   		RUSTUP_INIT_SKIP_PATH_CHECK=yes $(RUSTUP_INIT_BIN) \
   			--quiet -y \
   			--no-update-default-toolchain \
@@ -225,7 +231,6 @@ _rustup-toolchain-install-no-info:
   			--target $(RUSTUP_ALL_TARGETS_STABLE) \
   			--profile default ; \
   	else \
-  		echo "RUSTUP_ALL_TARGETS=$(RUSTUP_ALL_TARGETS)" ; \
 		RUSTUP_INIT_SKIP_PATH_CHECK=yes $(RUSTUP_INIT_BIN) \
 			--quiet -y \
 			--no-update-default-toolchain \

@@ -4,7 +4,7 @@
 ifndef _MK_PNPM_MK_
 _MK_PNPM_MK_ := 1
 
-#$(info ---> .make/pnpm.mk)
+$(info ---> .make/pnpm.mk)
 
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
@@ -25,7 +25,9 @@ undefine PATH2
 endif
 
 NPM_BIN := $(call where-is-binary,npm)
+NPX_BIN := $(call where-is-binary,npx)
 PNPM_BIN := $(call where-is-binary,pnpm)
+PNPM_CMD := $(NPM_BIN) pnpm
 
 ifdef PNPM_BIN
 PNPM_VERSION := $(shell $(PNPM_BIN) --version 2>/dev/null | cut -d\  -f2)
@@ -41,22 +43,31 @@ endif
 .PHONY: pnpm-check
 ifdef PNPM_BIN
 ifeq ($(PNPM_CHECKED),1)
-pnpm-check: nodejs-check
+pnpm-check: _pnpm-check-info nodejs-check
 	@#echo "Using pnpm $(PNPM_VERSION), with its config file $(GIT_ROOT)/package.json"
 else
-pnpm-check: pnpm-install-itself-first
+pnpm-check: _pnpm-check-info pnpm-install-itself-first
+	@printf "$(green)checked pnpm $(PNPM_VERSION_EXPECTED)$(normal)\n"
+	PNPM_VERSION_COMMAND_LINE=$$($(PNPM_BIN) --version 2>/dev/null | cut -d\  -f2)
+	PNPM_VERSION_COREPACK=$$($(NPX_BIN) pnpm --version 2>/dev/null | cut -d\  -f2)
+	@printf "$(red)Detected pnpm version $${PNPM_VERSION_COMMAND_LINE} on the command line and version $${PNPM_VERSION_COREPACK} via corepack$(normal)\n"
 endif
 else
-pnpm-check: nodejs-check
-	@echo "pnpm is not installed, can't run this function, run $(MAKE) pnpm-install-itself"
+pnpm-check: _pnpm-check-info nodejs-check
+	@printf "$(red)pnpm is not installed, can't run this function, run $(MAKE) pnpm-install-itself$(normal)\n"
 	exit 1
 endif
+
+.PHONY: _pnpm-check-info
+_pnpm-check-info:
+	@printf "$(bold)Checking $(green)pnpm $(PNPM_VERSION_EXPECTED)$(normal):\n"
 
 .PHONY: pnpm-install-itself-first
 pnpm-install-itself-first: brew-check nodejs-check
 	@printf "Installing $(bold)$(green)pnpm $(PNPM_VERSION_EXPECTED)$(normal) with corepack:\n"
 	$(COREPACK_BIN) install --global pnpm@$(PNPM_VERSION_EXPECTED)
 	$(COREPACK_BIN) prepare pnpm@$(PNPM_VERSION_EXPECTED) --activate
+	$(COREPACK_BIN) use pnpm@$(PNPM_VERSION_EXPECTED)
 	@printf "Installed $(bold)$(green)pnpm $(PNPM_VERSION_EXPECTED)$(normal)\n"
 
 .PHONY: pnpm-install-prerequisites
@@ -91,6 +102,6 @@ pnpm-update: pnpm-check pnpm-upgrade-pnpm
 pnpm-run-dev: pnpm-check
 	cd $(GIT_ROOT) && $(PNPM_BIN) run dev
 
-#$(info <--- .make/pnpm.mk)
+$(info <--- .make/pnpm.mk)
 
 endif # _MK_PNPM_MK_

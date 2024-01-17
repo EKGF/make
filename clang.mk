@@ -1,7 +1,7 @@
 ifndef _MK_CLANG_MK_
 _MK_CLANG_MK_ := 1
 
-$(info ---> .make/clang.mk)
+#$(info ---> .make/clang.mk)
 
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
@@ -51,7 +51,6 @@ else
 LIBCLANG_PATH := /usr/local/opt/llvm/lib
 endif
 endif
-#$(info LIBCLANG_PATH=$(LIBCLANG_PATH))
 
 ifndef LIBCLANG_PATH
 $(warning LIBCLANG_PATH is not defined)
@@ -79,10 +78,7 @@ ifeq ($(UNAME_S),Darwin)
 export BINDGEN_EXTRA_CLANG_ARGS="-I /Library/Developer/CommandLineTools/usr/include/c++/v1 -I /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include"
 endif
 
-$(info LIBCLANG_PATH=$(LIBCLANG_PATH))
-
 LLVM_VERSION := $(shell "$(LIBCLANG_BIN_PATH)/llvm-config" --version 2>/dev/null)
-$(info LLVM_VERSION=$(LLVM_VERSION))
 
 .PHONY: clang-install
 ifeq ($(CLANG_INSTALL),0)
@@ -116,6 +112,6 @@ endif
 .PHONY: llvm-check
 llvm-check: clang-check
 
-$(info <--- .make/clang.mk)
+#$(info <--- .make/clang.mk)
 
 endif # _MK_CLANG_MK_

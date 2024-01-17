@@ -64,8 +64,8 @@ endif
 #
 .PHONY: oxigraph-install
 oxigraph-install: oxigraph-clean os-tools-install cargo-check clang-check
-	@echo "Installing OxiGraph"
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install oxigraph_server --version "^$(OXIGRAPH_VERSION_EXPECTED)" --force
+	@printf "$(bold)Installing OxiGraph:$(normal)\n"
+	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install oxigraph_server --version "^$(OXIGRAPH_VERSION_EXPECTED)"
 
 .PHONY: oxigraph-help
 oxigraph-help: $(OXIGRAPH_LOCATION) oxigraph-check

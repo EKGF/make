@@ -32,7 +32,7 @@ darwin-tools-install: gcc-install xcode-os-tools-install llvm-install-with-brew 
 
 .PHONY: _darwin-tools-install-info
 _darwin-tools-install-info:
-	@echo "Installing Darwin tools"
+	@printf "$(bold)Installing Darwin tools:$(normal)\n"
 
 .PHONY: darwin-tools-install
 ifeq ($(RUNNING_IN_DOCKER),1)

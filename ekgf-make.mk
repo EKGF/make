@@ -6,7 +6,7 @@
 ifndef _MK_EKGF_MAKE_MK_
 _MK_EKGF_MAKE_MK_ := 1
 
-$(info ---> .make/ekgf-make.mk)
+#$(info ---> .make/ekgf-make.mk)
 
 _MK_ENABLE_DOWNLOAD_ := 1
 
@@ -72,14 +72,12 @@ $(MK_FLAG_FILE):
 
 endif
 
-#$(MK_DIR)/*.mk &: $(MK_FLAG_FILE)
-
 .PHONY: mk-clean
 mk-clean:
 	@echo "mk-clean"
 	@rm -f $(MK_TAR)
 	@rm -rf $(MK_DIR)
 
-$(info <--- .make/ekgf-make.mk)
+#$(info <--- .make/ekgf-make.mk)
 
 endif # _MK_EKGF_MAKE_MK_

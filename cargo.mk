@@ -185,151 +185,55 @@ cargo-extensions: rustup-check \
 
 .PHONY: cargo-install-cocogitto
 cargo-install-cocogitto:
-	@echo Install Cocogitto
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cocogitto --force
+	@printf "$(bold)Installing Cocogitto:\n"
+	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cocogitto
 
 .PHONY: cargo-install-cargo-lambda
 cargo-install-cargo-lambda: zig-install
-	@echo Install Cargo Lambda
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-lambda --force
+	@printf "$(bold)Installing Cargo Lambda:\n"
+	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-lambda
 
 # zig is exclusively used by cargo-lambda only so for now we just put this here
 # eventually we may want to move it to its own zig.mk file
 .PHONY: zig-install
 zig-install: brew-check $(BREW_PACKAGES)
-	@echo Install Zig
+	@printf "$(bold)Installing Zig:\n"
 	@grep "^zig " $(BREW_PACKAGES) || $(BREW_BIN) install zig
 
 .PHONY: cargo-install-cargo-edit
 cargo-install-cargo-edit:
-	@echo Install Cargo Edit
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-edit --force
+	@printf "$(bold)Installing Cargo Edit:\n"
+	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-edit
 
 .PHONY: cargo-install-cargo-cache
 cargo-install-cargo-cache: cargo-install-cargo-outdated
-	@echo Install Cargo Cache
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-cache --force
+	@printf "$(bold)Installing Cargo Cache:\n"
+	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-cache
 
 .PHONY: cargo-install-cargo-outdated
 cargo-install-cargo-outdated:
-	@echo Install Cargo Outdated
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-outdated --force
+	@printf "$(bold)Installing Cargo Outdated:\n"
+	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-outdated
 
 .PHONY: cargo-install-wasm-pack
 cargo-install-wasm-pack:
-	@echo Install WASM Pack
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked wasm-pack --force
+	@printf "$(bold)Installing WASM Pack:\n"
+	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked wasm-pack
 
 .PHONY: cargo-install-wasm-bindgen-cli
 cargo-install-wasm-bindgen-cli:
-	@echo Install WASM Bindgen CLI
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked wasm-bindgen-cli --force
+	@printf "$(bold)Installing WASM Bindgen CLI:\n"
+	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked wasm-bindgen-cli
 
 .PHONY: cargo-install-wasm2map
 cargo-install-wasm2map:
-	@echo Install WASM2Map
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-wasm2map --force
+	@printf "$(bold)Installing WASM2Map:\n"
+	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-wasm2map
 
 .PHONY: cargo-install-cargo-upgrades
 cargo-install-cargo-upgrades:
-	@echo Install Cargo Upgrades
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-upgrades --force
-
-.PHONY: cargo-unused-dependencies
-cargo-unused-dependencies: cargo-check
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) udeps --no-default-features --features no-wasm
-
-.PHONY: cargo-unused-dependencies-wasm
-cargo-unused-dependencies-wasm: cargo-check
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) udeps --target wasm32-unknown-unknown --no-default-features --features wasm-support
-
-.PHONY: cargo-outdated-dependencies
-cargo-outdated-dependencies: cargo-check
-	@#echo Check for outdated dependencies GIT_ROOT=$(GIT_ROOT)
-	@# Copying the CI version of config.toml to config to temporarily overrule the
-	@# standard .cargo/config.toml file because "cargo outdated" cannot deal with
-	@# the patch statements in that file.
-	#cp -v $(GIT_ROOT)/.cargo/config.toml $(GIT_ROOT)/.cargo/config.toml.original
-	#cp -v $(GIT_ROOT)/.cargo/config-ci.toml $(GIT_ROOT)/.cargo/config.toml
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) outdated --workspace --aggressive -x rdf-store-rs -x salvo
-	#cp -v $(GIT_ROOT)/.cargo/config.toml.original $(GIT_ROOT)/.cargo/config.toml
-
-.PHONY: cargo-update-dependencies-dry-run
-cargo-update-dependencies-dry-run: cargo-check
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) update --dry-run
-
-.PHONY: cargo-update-dependencies
-cargo-update-dependencies: cargo-check
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) update --color always
-
-.PHONY: cargo-show-upgrades
-cargo-show-upgrades: cargo-check
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) upgrades
-
-.PHONY: cargo-upgrade
-cargo-upgrade: cargo-check
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) upgrade --verbose 2>&1 | ggrep -v "warning: ignoring"
-
-.PHONY: cargo-upgrade-locked
-cargo-upgrade-locked: cargo-check
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) upgrade --verbose --locked 2>&1 | ggrep -v "warning: ignoring"
-
-.PHONY: tree-wasm
-tree-wasm: cargo-check rustup-nightly
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) tree --target wasm32-unknown-unknown --features wasm-support --no-default-features --edges features
-
-.PHONY: tree-no-wasm
-tree-no-wasm: cargo-check rustup-nightly
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) tree --target $(CARGO_BUILD_TARGET) --features no-wasm --no-default-features --edges features
-
-.PHONY: build-no-wasm
-build-no-wasm: cargo-check rustup-nightly
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) build --target $(CARGO_BUILD_TARGET) --features no-wasm --no-default-features $(CARGO_BUILD_RELEASE_FLAG)
-
-.PHONY: build-no-wasm-and-tracing-default
-build-no-wasm-and-tracing-default: cargo-check rustup-nightly
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) build --target $(CARGO_BUILD_TARGET) --features no-wasm,tracing-default --no-default-features $(CARGO_BUILD_RELEASE_FLAG)
-
-.PHONY: build-wasm
-build-wasm: cargo-check rustup-nightly
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) build --target wasm32-unknown-unknown --features wasm-support,tracing-wasm --no-default-features $(CARGO_BUILD_RELEASE_FLAG)
-
-ifdef CARGO_BUILD_FEATURES
-$(info build-with-features=$(CARGO_BUILD_FEATURES))
-.PHONY: build-no-wasm-with-features
-build-no-wasm-with-features: cargo-check rustup-nightly
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) build --target $(CARGO_BUILD_TARGET) --features no-wasm,$(CARGO_BUILD_FEATURES) --no-default-features $(CARGO_BUILD_RELEASE_FLAG)
-
-.PHONY: build-no-wasm-with-features-and-tracing-default
-build-no-wasm-with-features-and-tracing-default: cargo-check rustup-nightly
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) build --target $(CARGO_BUILD_TARGET) --features no-wasm,tracing-default,$(CARGO_BUILD_FEATURES) --no-default-features $(CARGO_BUILD_RELEASE_FLAG)
-
-.PHONY: build-wasm-with-features
-build-wasm-with-features: cargo-check rustup-nightly
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) build --target wasm32-unknown-unknown --features wasm-support,tracing-wasm,$(CARGO_BUILD_FEATURES) --no-default-features $(CARGO_BUILD_RELEASE_FLAG)
-
-.PHONY: build-with-features
-build-with-features: cargo-check rustup-nightly
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) build --target $(CARGO_BUILD_TARGET) --features $(CARGO_BUILD_FEATURES) --no-default-features $(CARGO_BUILD_RELEASE_FLAG)
-else
-#$(info no specific build features)
-endif
-
-.PHONY: test-no-wasm
-test-no-wasm: cargo-check rustup-nightly
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) test --target $(CARGO_BUILD_TARGET) --features no-wasm --no-default-features
-
-.PHONY: test-bins-no-wasm
-test-bins-no-wasm: cargo-check
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) test --target $(CARGO_BUILD_TARGET) --features no-wasm --no-default-features --bins
-
-.PHONY: lint-no-wasm
-lint-no-wasm: cargo-check rustup-nightly
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) clippy --target $(CARGO_BUILD_TARGET) --no-deps --features no-wasm --no-default-features -- --deny warnings
-
-.PHONY: lint-wasm
-lint-wasm: cargo-check rustup-nightly rustup-wasm
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) clippy --target wasm32-unknown-unknown --no-deps --features wasm-support --no-default-features -- --deny warnings
+	@printf "$(bold)Installing Cargo Upgrades:\n"
+	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-upgrades
 
 #$(info <--- .make/cargo.mk)
 
