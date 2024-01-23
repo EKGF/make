@@ -21,7 +21,6 @@ include $(MK_DIR)/jq.mk
 include $(MK_DIR)/rustup.mk
 include $(MK_DIR)/asdf.mk
 include $(MK_DIR)/python.mk
-include $(MK_DIR)/poetry.mk
 include $(MK_DIR)/aws.mk
 include $(MK_DIR)/open-next.mk
 include $(MK_DIR)/nextjs.mk
@@ -77,7 +76,6 @@ install: \
 	sops-install \
 	pipx-check \
 	python-check \
-	poetry-install-itself \
 	terraform-install \
 	terragrunt-install \
 	cog-install \

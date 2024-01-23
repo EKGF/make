@@ -35,7 +35,6 @@ right order.
 - [pip](./pip.mk)
 - [pipx](./pipx.mk)
 - [pnpm](./pnpm.mk)
-- [Poetry](./poetry.mk)
 - [Rust](./rust-target.mk)
 - [Rustup](./rustup.mk)
 - [Sops](./sops.mk)
