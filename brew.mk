@@ -17,7 +17,15 @@ export HOMEBREW_AUTO_UPDATE_SECS := 86400
 
 BREW_BIN := $(call where-is-binary,brew)
 ifndef BREW_BIN
-$(info BREW_BIN not found)
+ifeq (,$(filter brew-install,$(MAKECMDGOALS)))
+$(error Homebrew not found, run "$(MAKE) brew-install" to install)
+else
+# I know, the lines below are even uglier than everything else in this file :-)
+skip_rustup_check := 1
+skip_cargo_check := 1
+skip_llvm_check := 1
+skip_sops_check := 1
+endif
 endif
 
 ifdef BREW_BIN
@@ -49,11 +57,13 @@ brew-install-linux:
 else
 .INTERMEDIATE: $(TMP_DIR)/brew-install-script.sh
 $(TMP_DIR)/brew-install-script.sh: curl-check
+	@printf "$(bold)brew-install-script: downloading script$(normal)\n"
 	curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh > $@
 	chmod u+x $@
+	@printf "$(bold)brew-install-script: script can now be run$(normal)\n"
 
 brew-install-linux: $(TMP_DIR)/brew-install-script.sh
-	@printf "$(bold)brew-install-linux:$(normal)\n"
+	@printf "$(bold)brew-install-linux: running install script $^$(normal)\n"
 	@# see https://brew.sh/
 	$(TMP_DIR)/brew-install-script.sh
 	@echo "HomeBrew install script finished"

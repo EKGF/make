@@ -235,6 +235,16 @@ cargo-install-cargo-upgrades:
 	@printf "$(bold)Installing Cargo Upgrades:\n"
 	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-upgrades
 
+.PHONY: cargo-build-workspace
+cargo-build-workspace: cargo-check
+	@printf "$(bold)Building Cargo workspace:\n"
+	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) build --workspace
+
+.PHONY: cargo-build-workspace-release
+cargo-build-workspace-release: cargo-check
+	@printf "$(bold)Building Cargo workspace:\n"
+	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) build --workspace --release
+
 #$(info <--- .make/cargo.mk)
 
 endif # _MK_CARGO_MK_

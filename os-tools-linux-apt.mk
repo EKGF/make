@@ -89,6 +89,31 @@ _linux-tool-elf: apt-update
 	@dpkg -s patchelf >/dev/null 2>&1 || \
 	$(APT_INSTALL) patchelf
 
+# Required for LaTeX support (tectonic) etc
+.PHONY: _linux-tool-fontconfig1
+_linux-tool-fontconfig1: apt-update
+	@dpkg -s libfontconfig1-dev >/dev/null 2>&1 || \
+	$(APT_INSTALL) libfontconfig1-dev
+
+# Required for LaTeX support (tectonic) etc
+.PHONY: _linux-tool-freetype6
+_linux-tool-freetype6: apt-update
+	@dpkg -s libfreetype6-dev >/dev/null 2>&1 || \
+	$(APT_INSTALL) libfreetype6-dev
+
+# Required for LaTeX support (tectonic) etc
+.PHONY: _linux-tool-graphite2
+_linux-tool-graphite2: apt-update
+	@dpkg -s libgraphite2-dev >/dev/null 2>&1 || \
+	$(APT_INSTALL) libgraphite2-dev
+
+# Required for LaTeX support (tectonic) etc
+.PHONY: _linux-tool-icu
+_linux-tool-icu: apt-update
+	@dpkg -s libicu-dev >/dev/null 2>&1 || \
+	$(APT_INSTALL) libicu-dev
+
+# Required for LaTeX support (tectonic) etc
 .PHONY: _linux-tool-ssl
 _linux-tool-ssl: apt-update
 	@dpkg -s libssl-dev >/dev/null 2>&1 || \
@@ -124,9 +149,13 @@ linux-tools-install: _linux-tools-install-info \
 	_linux-tool-ayatana \
 	_linux-tool-svg \
 	_linux-tool-elf \
+	_linux-tool-icu \
 	_linux-tool-ssl \
 	_linux-tool-appstream \
 	_linux-tool-bsdtar \
+	_linux-tool-fontconfig1 \
+	_linux-tool-freetype6 \
+	_linux-tool-graphite2 \
 	sops-check
 	@echo "Linux tools have been installed"
 endif

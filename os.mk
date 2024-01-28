@@ -118,11 +118,16 @@ ifeq ($(RUNNING_IN_CLOUDSHELL),1)
 IS_LINUX_WITH_APT := 0
 IS_LINUX_WITH_YUM := 1
 else
+ifeq ($(shell source /etc/os-release 2>/dev/null; echo $$ID),ubuntu)
+IS_LINUX_WITH_APT := 1
+IS_LINUX_WITH_YUM := 0
+else
 ifndef WSL
 $(info Unrecognized linux distribution, assuming apt over yum)
 endif
 IS_LINUX_WITH_APT := 1
 IS_LINUX_WITH_YUM := 0
+endif
 endif
 endif
 

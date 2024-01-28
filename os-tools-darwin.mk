@@ -44,6 +44,7 @@ darwin-tools-install: _darwin-tools-install-info \
 	_darwin-tool-pkg-config \
 	_darwin-tool-graphite2 \
 	_darwin-tool-freetype2 \
+	_darwin-tool-iconv \
 	sops-check
 	@echo "Darwin tools have been installed"
 endif
@@ -63,6 +64,10 @@ _darwin-tool-graphite2:
 .PHONY: _darwin-tool-freetype2
 _darwin-tool-freetype2:
 	@if [ ! -d $(HOMEBREW_CELLAR)/freetype/2.13.* ] ; then $(BREW_BIN) install freetype2 ; else echo "freetype2 2.13.* is already installed" ; fi
+
+.PHONY: _darwin-tool-iconv
+_darwin-tool-iconv:
+	@if [ ! -d $(HOMEBREW_CELLAR)/libiconv/1.* ] ; then $(BREW_BIN) install libiconv ; else echo "libiconv 1.* is already installed" ; fi
 
 #$(info <--- .make/os-tools-darwin.mk)
 
