@@ -19,7 +19,7 @@ TFLINT_BIN := $(call where-is-binary,tflint)
 ifdef TFLINT_BIN
 TFLINT_VERSION := $(shell $(TFLINT_BIN) --version 2>/dev/null | head -n1 | cut -d\  -f3)
 endif
-TFLINT_VERSION_EXPECTED := 0.50.1
+TFLINT_VERSION_EXPECTED := 0.50.2
 ifeq ($(TFLINT_VERSION),$(TFLINT_VERSION_EXPECTED))
 TFLINT_CHECKED := 1
 else
