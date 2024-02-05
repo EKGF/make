@@ -61,7 +61,7 @@ nodejs-install: brew-check
 	$(BREW_BIN) unlink node@$(NODEJS_MAIN_VERSION_EXPECTED)
 	$(BREW_BIN) link --force --overwrite node@$(NODEJS_MAIN_VERSION_EXPECTED)
 	# We have to unlink pnpm here because otherwise corepack installation may fail
-	$(BREW_BIN) unlink pnpm
+	#$(BREW_BIN) unlink pnpm
 	$(BREW_BIN) install corepack
 
 #$(info <--- .make/nodejs.mk)
