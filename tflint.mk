@@ -19,7 +19,8 @@ TFLINT_BIN := $(call where-is-binary,tflint)
 ifdef TFLINT_BIN
 TFLINT_VERSION := $(shell $(TFLINT_BIN) --version 2>/dev/null | head -n1 | cut -d\  -f3)
 endif
-TFLINT_VERSION_EXPECTED := 0.50.2
+# keep the line below in sync with version published at https://formulae.brew.sh/formula/tflint
+TFLINT_VERSION_EXPECTED := 0.50.3
 ifeq ($(TFLINT_VERSION),$(TFLINT_VERSION_EXPECTED))
 TFLINT_CHECKED := 1
 else
@@ -30,7 +31,7 @@ endif
 ifdef TFLINT_BIN
 $(info terraform lint, version $(TFLINT_VERSION), does not match expected version $(TFLINT_VERSION_EXPECTED))
 else
-$(info terraform lint not installed)
+$(info terraform lint $(TFLINT_VERSION_EXPECTED) has not been installed (we found $(TFLINT_VERSION)))
 endif
 endif
 
