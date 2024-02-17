@@ -19,7 +19,8 @@ TERRAGRUNT_BIN := $(call where-is-binary,terragrunt)
 ifdef TERRAGRUNT_BIN
 TERRAGRUNT_VERSION := $(shell $(TERRAGRUNT_BIN) --version 2>/dev/null | cut -d\  -f3)
 endif
-TERRAGRUNT_VERSION_EXPECTED := 0.54.22
+# keep the line below in sync with version published at https://formulae.brew.sh/formula/terragrunt
+TERRAGRUNT_VERSION_EXPECTED := 0.55.1
 ifeq ($(TERRAGRUNT_VERSION),$(TERRAGRUNT_VERSION_EXPECTED))
 TERRAGRUNT_CHECKED := 1
 else
@@ -27,7 +28,8 @@ TERRAGRUNT_CHECKED := 0
 ifdef TERRAGRUNT_BIN
 $(info terragrunt version $(TERRAGRUNT_VERSION) does not match expected version $(TERRAGRUNT_VERSION_EXPECTED))
 else
-$(info terragrunt not installed)
+$(info terragrunt $(TERRAGRUNT_VERSION_EXPECTED) has not been installed (we found $(TERRAGRUNT_VERSION)))
+
 endif
 endif
 

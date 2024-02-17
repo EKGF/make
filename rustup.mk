@@ -17,7 +17,9 @@ include $(MK_DIR)/curl.mk
 # See https://substrate.stackexchange.com/a/9069/4489
 # Don't forget to also update /rust-toolchain.toml !!
 #RUSTUP_TOOLCHAIN := nightly-2023-08-26
-export RUSTUP_TOOLCHAIN := stable
+ifndef RUSTUP_TOOLCHAIN
+export RUSTUP_TOOLCHAIN := nightly
+endif
 
 ifneq ($(skip_rustup_check),1)
 ifeq ($(RUSTUP_HOME),)

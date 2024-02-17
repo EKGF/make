@@ -67,6 +67,10 @@ ifdef LLVM_INC_PATH
 export CPPFLAGS="-I$(LLVM_INC_PATH)"
 endif
 
+# This assumes you have run "brew install icu4c"
+export LDFLAGS="$(LDFLAGS) -L$(HOMEBREW_PREFIX)/opt/icu4c/lib"
+export CPPFLAGS="$(CPPFLAGS) -I$(HOMEBREW_PREFIX)/opt/icu4c/include"
+
 ifdef LLVM_BIN_PATH
 export CC=$(LLVM_BIN_PATH)/clang
 export CXX=$(LLVM_BIN_PATH)/clang++

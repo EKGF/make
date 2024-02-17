@@ -16,8 +16,9 @@ include $(MK_DIR)/git.mk
 include $(MK_DIR)/sops.mk
 include $(MK_DIR)/os-tools.mk
 
-XCODE_SELECT_BIN := $(call where-is-binary,xcode-select)
-PKG_CONFIG_PATH := /usr/local/Cellar/icu4c/73.2/lib/pkgconfig
+export XCODE_SELECT_BIN := $(call where-is-binary,xcode-select)
+# This assumes you have installed icu4c via brew
+export PKG_CONFIG_PATH := $(HOMEBREW_CELLAR)/icu4c/73.2/lib/pkgconfig
 
 .PHONY: xcode-os-tools-install
 ifdef XCODE_SELECT_BIN

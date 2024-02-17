@@ -12,7 +12,7 @@ endif
 
 include $(MK_DIR)/os.mk
 
-USE_CASE_ROOT := $(GIT_ROOT)/use-case/
+USE_CASE_ROOT := $(RDF_LOCAL_USECASES_DIR)/
 USE_CASE_DIRECTORIES := $(filter-out $(USE_CASE_ROOT),$(sort $(dir $(wildcard $(USE_CASE_ROOT)*/))))
 STORY_DIRECTORIES := $(foreach dir,$(USE_CASE_DIRECTORIES),$(dir)stories)
 

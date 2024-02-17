@@ -35,7 +35,7 @@ endif
 endif
 ifeq ($(UNAME_S),Darwin)
 curl-check:
-	@curl --version | grep -q "curl 7."
+	@$(CURL_BIN) --version | grep -q "curl [7|8|9]."
 endif
 else
 curl-check:

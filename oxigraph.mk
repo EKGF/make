@@ -55,7 +55,7 @@ oxigraph-check:
 endif
 
 #
-# Install OxiGraph by building it from source ysing the "cargo install" command which puts the binary executable
+# Install OxiGraph by building it from source using the "cargo install" command which puts the binary executable
 # (oxigraph_server) in the Cargo bin directory (usually ~/.cargo/bin).
 #
 # This has the advantage that we can always use the latest and greatest version of OxiGraph (it's a moving target)
