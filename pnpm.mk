@@ -32,7 +32,7 @@ PNPM_CMD := $(NPM_BIN) pnpm
 ifdef PNPM_BIN
 PNPM_VERSION := $(shell $(PNPM_BIN) --version 2>/dev/null | cut -d\  -f2)
 endif
-PNPM_VERSION_EXPECTED := 10.4.0
+PNPM_VERSION_EXPECTED := 8.15.3
 ifeq ($(PNPM_VERSION),$(PNPM_VERSION_EXPECTED))
 PNPM_CHECKED := 1
 else
@@ -64,6 +64,10 @@ _pnpm-check-info:
 
 .PHONY: pnpm-install-itself-first
 pnpm-install-itself-first: brew-check nodejs-check
+	@printf "Installing $(bold)$(green)pnpm$(normal) (as configured in your package.json) with corepack:\n"
+	$(COREPACK_BIN) install
+	@printf "Upgrading $(bold)$(green)pnpm$(normal) (as configured in your package.json) with corepack:\n"
+	$(COREPACK_BIN) up
 	@printf "Installing $(bold)$(green)pnpm $(PNPM_VERSION_EXPECTED)$(normal) with corepack:\n"
 	$(COREPACK_BIN) install --global pnpm@$(PNPM_VERSION_EXPECTED)
 	$(COREPACK_BIN) prepare pnpm@$(PNPM_VERSION_EXPECTED) --activate

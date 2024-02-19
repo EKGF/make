@@ -78,7 +78,6 @@ install: \
 	python-check \
 	terraform-install \
 	terragrunt-install \
-	cog-install \
 	oxigraph-install
 
 #
