@@ -24,12 +24,12 @@ endif
 ifdef PIP_BIN
 PIP_VERSION := $(shell $(PIP_BIN) --version 2>/dev/null | cut -d\  -f2)
 endif
-PIP_VERSION_EXPECTED := 23.3.1
+PIP_VERSION_EXPECTED := 24.0
 ifeq ($(PIP_VERSION),$(PIP_VERSION_EXPECTED))
 PIP_CHECKED := 1
 else
 PIP_CHECKED := 0
-$(info pip version $(PIP_VERSION) does not match expected version $(PIP_VERSION_EXPECTED))
+$(info pip3 version $(PIP_VERSION) does not match expected version $(PIP_VERSION_EXPECTED))
 endif
 
 .PHONY: pip-check
