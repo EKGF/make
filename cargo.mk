@@ -191,7 +191,7 @@ cargo-install-cocogitto:
 .PHONY: cargo-install-cargo-lambda
 cargo-install-cargo-lambda: zig-install
 	@printf "$(bold)Installing Cargo Lambda:\n"
-	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-lambda
+	@$(CARGO_BIN) +nightly install --locked cargo-lambda
 
 # zig is exclusively used by cargo-lambda only so for now we just put this here
 # eventually we may want to move it to its own zig.mk file
