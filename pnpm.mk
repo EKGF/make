@@ -4,7 +4,7 @@
 ifndef _MK_PNPM_MK_
 _MK_PNPM_MK_ := 1
 
-$(info ---> .make/pnpm.mk)
+#$(info ---> .make/pnpm.mk)
 
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
@@ -46,19 +46,22 @@ ifeq ($(PNPM_CHECKED),1)
 pnpm-check: _pnpm-check-info nodejs-check
 	@#echo "Using pnpm $(PNPM_VERSION), with its config file $(GIT_ROOT)/package.json"
 else
-pnpm-check: _pnpm-check-info pnpm-install-itself-first
-	@printf "$(green)checked pnpm $(PNPM_VERSION_EXPECTED)$(normal)\n"
-	@printf " - PNPM_BIN=$(PNPM_BIN)\n"
-	PNPM_VERSION_COMMAND_LINE=$$($(PNPM_BIN) --version 2>/dev/null | cut -d\  -f2)
-	@printf " - NPX_BIN=$(NPX_BIN)\n"
-	PNPM_VERSION_COREPACK=$$($(NPX_BIN) pnpm --version 2>/dev/null | cut -d\  -f2)
-	@printf "$(red)Detected pnpm version $${PNPM_VERSION_COMMAND_LINE} on the command line and version $${PNPM_VERSION_COREPACK} via corepack$(normal)\n"
+pnpm-check: pnpm-force-check
 endif
 else
 pnpm-check: _pnpm-check-info nodejs-check
 	@printf "$(red)pnpm is not installed, can't run this function, run $(MAKE) pnpm-install-itself$(normal)\n"
 	exit 1
 endif
+
+.PHONY: pnpm-force-check
+pnpm-force-check: _pnpm-check-info pnpm-install-itself-first
+	@printf "$(green)checked pnpm $(PNPM_VERSION_EXPECTED)$(normal)\n"
+	@printf " - PNPM_BIN=$(PNPM_BIN)\n"
+	PNPM_VERSION_COMMAND_LINE=$$($(PNPM_BIN) --version 2>/dev/null | cut -d\  -f2) && printf "$(red)Detected pnpm version $${PNPM_VERSION_COMMAND_LINE} on the command line using \"$(PNPM_BIN) --version\"$(normal)\n"
+	$(NPX_BIN) install pnpm > /dev/null 2>&1 || true
+	@printf " - NPX_BIN=$(NPX_BIN)\n"
+	PNPM_VERSION_COREPACK=$$($(NPX_BIN) pnpm --version 2>/dev/null | cut -d\  -f2) && printf "$(red)Detected pnpm version $${PNPM_VERSION_COREPACK} on the command line using \"$(NPX_BIN) pnpm --version\"$(normal)\n"
 
 .PHONY: _pnpm-check-info
 _pnpm-check-info:
@@ -108,6 +111,6 @@ pnpm-update: pnpm-check pnpm-upgrade-pnpm
 pnpm-run-dev: pnpm-check
 	cd $(GIT_ROOT) && $(PNPM_BIN) run dev
 
-$(info <--- .make/pnpm.mk)
+#$(info <--- .make/pnpm.mk)
 
 endif # _MK_PNPM_MK_
