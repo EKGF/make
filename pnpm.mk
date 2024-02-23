@@ -61,7 +61,7 @@ pnpm-force-check: _pnpm-check-info pnpm-install-itself-first
 	PNPM_VERSION_COMMAND_LINE=$$($(PNPM_BIN) --version 2>/dev/null | cut -d\  -f2) && printf "$(red)Detected pnpm version $${PNPM_VERSION_COMMAND_LINE} on the command line using \"$(PNPM_BIN) --version\"$(normal)\n"
 	$(NPX_BIN) install pnpm > /dev/null 2>&1 || true
 	@printf " - NPX_BIN=$(NPX_BIN)\n"
-	PNPM_VERSION_COREPACK=$$($(NPX_BIN) pnpm --version 2>/dev/null | cut -d\  -f2) && printf "$(red)Detected pnpm version $${PNPM_VERSION_COREPACK} on the command line using \"$(NPX_BIN) pnpm --version\"$(normal)\n"
+	PNPM_VERSION_COREPACK=$$($(NPX_BIN) -y pnpm --version 2>/dev/null | cut -d\  -f2) && printf "$(red)Detected pnpm version $${PNPM_VERSION_COREPACK} on the command line using \"$(NPX_BIN) pnpm --version\"$(normal)\n"
 
 .PHONY: _pnpm-check-info
 _pnpm-check-info:
