@@ -48,7 +48,9 @@ pnpm-check: _pnpm-check-info nodejs-check
 else
 pnpm-check: _pnpm-check-info pnpm-install-itself-first
 	@printf "$(green)checked pnpm $(PNPM_VERSION_EXPECTED)$(normal)\n"
+	@printf " - PNPM_BIN=$(PNPM_BIN)\n"
 	PNPM_VERSION_COMMAND_LINE=$$($(PNPM_BIN) --version 2>/dev/null | cut -d\  -f2)
+	@printf " - NPX_BIN=$(NPX_BIN)\n"
 	PNPM_VERSION_COREPACK=$$($(NPX_BIN) pnpm --version 2>/dev/null | cut -d\  -f2)
 	@printf "$(red)Detected pnpm version $${PNPM_VERSION_COMMAND_LINE} on the command line and version $${PNPM_VERSION_COREPACK} via corepack$(normal)\n"
 endif
