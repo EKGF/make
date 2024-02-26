@@ -32,7 +32,7 @@ PNPM_CMD := $(NPM_BIN) pnpm
 ifdef PNPM_BIN
 PNPM_VERSION := $(shell $(PNPM_BIN) --version 2>/dev/null | cut -d\  -f2)
 endif
-PNPM_VERSION_EXPECTED := 8.15.3
+PNPM_VERSION_EXPECTED := 8.15.4
 ifeq ($(PNPM_VERSION),$(PNPM_VERSION_EXPECTED))
 PNPM_CHECKED := 1
 else
@@ -74,10 +74,12 @@ pnpm-install-itself-first: brew-check nodejs-check
 	@printf "Upgrading $(bold)$(green)pnpm$(normal) (as configured in your package.json) with corepack:\n"
 	$(COREPACK_BIN) up
 	@printf "Installing $(bold)$(green)pnpm $(PNPM_VERSION_EXPECTED)$(normal) with corepack:\n"
-	$(COREPACK_BIN) install --global pnpm@$(PNPM_VERSION_EXPECTED)
-	$(COREPACK_BIN) prepare pnpm@$(PNPM_VERSION_EXPECTED) --activate
-	$(COREPACK_BIN) use pnpm@$(PNPM_VERSION_EXPECTED)
-	$(COREPACK_BIN) enable
+	set -x ; $(COREPACK_BIN) install --global pnpm@$(PNPM_VERSION_EXPECTED)
+	set -x ; $(COREPACK_BIN) prepare pnpm@$(PNPM_VERSION_EXPECTED) --activate
+	set -x ; $(COREPACK_BIN) use pnpm@$(PNPM_VERSION_EXPECTED)
+	# for some reason the command below causes a symlink error whereas executing the exact
+	# same command in the shell does not
+	# set -x ; $(COREPACK_BIN) enable
 	@printf "Installed $(bold)$(green)pnpm $(PNPM_VERSION_EXPECTED)$(normal)\n"
 
 .PHONY: pnpm-install-prerequisites
