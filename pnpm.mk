@@ -77,6 +77,7 @@ pnpm-install-itself-first: brew-check nodejs-check
 	$(COREPACK_BIN) install --global pnpm@$(PNPM_VERSION_EXPECTED)
 	$(COREPACK_BIN) prepare pnpm@$(PNPM_VERSION_EXPECTED) --activate
 	$(COREPACK_BIN) use pnpm@$(PNPM_VERSION_EXPECTED)
+	$(COREPACK_BIN) enable
 	@printf "Installed $(bold)$(green)pnpm $(PNPM_VERSION_EXPECTED)$(normal)\n"
 
 .PHONY: pnpm-install-prerequisites

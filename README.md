@@ -1,6 +1,7 @@
 # GNU Make files for EKG engineers
 
-DRAFT
+Collection of GNU Make files to make life a bit easier for people working
+with EKG on Mac OS or Linux (Windows is not fully supported yet, unless you use WSL).
 
 This repo contains one `.mk` file per topic to be included
 by other `.mk` files or by top level `Makefile` files (such as [/Makefile](../Makefile))
@@ -8,7 +9,7 @@ in your own repo.
 
 These so-called "make files" are used by the infamous 
 [GNU Make utility](https://www.gnu.org/software/make/manual/html_node/index.html)
-which is an ancient but still very useful tool to get tasks executed in the
+which is an ancient but still beneficial tool to get tasks executed in the
 right order.
 
 ## Supported tools
@@ -35,6 +36,7 @@ right order.
 - [pip](./pip.mk)
 - [pipx](./pipx.mk)
 - [pnpm](./pnpm.mk)
+- [RDFox](./rdfox.mk)
 - [Rust](./rust-target.mk)
 - [Rustup](./rustup.mk)
 - [Sops](./sops.mk)
