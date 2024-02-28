@@ -169,7 +169,7 @@ endif
 cargo-install: rustup-check cargo-install-components
 
 .PHONY: cargo-install-components
-cargo-install-components: rustup-check cargo-extensions
+cargo-install-components: rustup-check cargo-extensions cargo-install-update
 
 .PHONY: cargo-extensions
 cargo-extensions: rustup-check \
@@ -179,6 +179,7 @@ cargo-extensions: rustup-check \
 	cargo-install-cargo-cache \
 	cargo-install-cargo-edit \
 	cargo-install-cargo-upgrades \
+	cargo-install-cargo-update \
 	cargo-install-wasm-pack \
 	cargo-install-wasm-bindgen-cli \
 	cargo-install-wasm2map
@@ -235,6 +236,11 @@ cargo-install-cargo-upgrades:
 	@printf "$(bold)Installing Cargo Upgrades:\n"
 	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install --locked cargo-upgrades
 
+.PHONY: cargo-install-cargo-update
+cargo-install-cargo-update:
+	@printf "$(bold)Installing Cargo Update:\n"
+	@$(CARGO_BIN) +stable install --locked cargo-update
+
 .PHONY: cargo-build-workspace
 cargo-build-workspace: cargo-check
 	@printf "$(bold)Building Cargo workspace:\n"
@@ -244,6 +250,11 @@ cargo-build-workspace: cargo-check
 cargo-build-workspace-release: cargo-check
 	@printf "$(bold)Building Cargo workspace:\n"
 	@$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) build --workspace --release
+
+.PHONY: cargo-install-update
+cargo-install-update: cargo-check
+	@printf "$(bold)Updating all installed Cargo executables:\n"
+	@$(CARGO_BIN) +stable install-update --all
 
 #$(info <--- .make/cargo.mk)
 

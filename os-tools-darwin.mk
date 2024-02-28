@@ -12,6 +12,12 @@ endif
 
 SED_BIN := gsed
 
+ifdef REQUIRES_TECTONIC
+REQUIRES_TECTONIC := $(REQUIRES_TECTONIC)
+else
+REQUIRES_TECTONIC := 0
+endif
+
 include $(MK_DIR)/git.mk
 include $(MK_DIR)/sops.mk
 include $(MK_DIR)/os-tools.mk
@@ -43,8 +49,12 @@ else
 darwin-tools-install: _darwin-tools-install-info \
 	_darwin-tool-icu4c \
 	_darwin-tool-pkg-config \
+	_darwin-tool-meson \
+	_darwin-tool-gtk-doc \
 	_darwin-tool-graphite2 \
 	_darwin-tool-freetype2 \
+	_darwin-tool-cairo \
+	_darwin-tool-glib \
 	_darwin-tool-iconv \
 	sops-check
 	@echo "Darwin tools have been installed"
@@ -52,23 +62,39 @@ endif
 
 .PHONY: _darwin-tool-icu4c
 _darwin-tool-icu4c:
-	@if [ ! -d $(HOMEBREW_CELLAR)/icu4c/73.2 ] ; then $(BREW_BIN) install icu4c ; else echo "icu4c 73.2 is already installed" ; fi
+	@if [ ! -d $(HOMEBREW_CELLAR)/icu4c/73.2 ] ; then $(BREW_BIN) install icu4c ; else printf "$(green)icu4c 73.2$(normal) is already installed\n" ; fi
 
 .PHONY: _darwin-tool-pkg-config
 _darwin-tool-pkg-config:
-	@if [ ! -d $(HOMEBREW_CELLAR)/pkg-config/0.29* ] ; then $(BREW_BIN) install pkg-config ; else echo "pkg-config 0.29* is already installed" ; fi
+	@if [ ! -d $(HOMEBREW_CELLAR)/pkg-config/0.29* ] ; then $(BREW_BIN) install pkg-config ; else printf "$(green)pkg-config 0.29*$(normal) is already installed\n" ; fi
+
+.PHONY: _darwin-tool-meson
+_darwin-tool-meson:
+	@if [ ! -d $(HOMEBREW_CELLAR)/meson/1.3.* ] ; then $(BREW_BIN) install meson ; else printf "$(green)meson 1.3.*$(normal) is already installed\n" ; fi
+
+.PHONY: _darwin-tool-gtk-doc
+_darwin-tool-gtk-doc:
+	@if [ ! -d $(HOMEBREW_CELLAR)/gtk-doc/1.33.* ] ; then $(BREW_BIN) install gtk-doc ; else printf "$(green)gtk-doc 1.33.*$(normal) is already installed\n" ; fi
 
 .PHONY: _darwin-tool-graphite2
 _darwin-tool-graphite2:
-	@if [ ! -d $(HOMEBREW_CELLAR)/graphite2/1.3.* ] ; then $(BREW_BIN) install graphite2 ; else echo "graphite2 1.3.* is already installed" ; fi
+	@if [ ! -d $(HOMEBREW_CELLAR)/graphite2/1.3.* ] ; then $(BREW_BIN) install graphite2 ; else printf "$(green)graphite2 1.3.*$(normal) is already installed\n" ; fi
 
 .PHONY: _darwin-tool-freetype2
 _darwin-tool-freetype2:
-	@if [ ! -d $(HOMEBREW_CELLAR)/freetype/2.13.* ] ; then $(BREW_BIN) install freetype2 ; else echo "freetype2 2.13.* is already installed" ; fi
+	@if [ ! -d $(HOMEBREW_CELLAR)/freetype/2.13.* ] ; then $(BREW_BIN) install freetype2 ; else printf "$(green)freetype2 2.13.*$(normal) is already installed\n" ; fi
+
+.PHONY: _darwin-tool-cairo
+_darwin-tool-cairo:
+	@if [ ! -d $(HOMEBREW_CELLAR)/cairo/1.18.* ] ; then $(BREW_BIN) install cairo ; else printf "$(green)cairo 1.18.*$(normal) is already installed\n" ; fi
+
+.PHONY: _darwin-tool-glib
+_darwin-tool-glib:
+	@if [ ! -d $(HOMEBREW_CELLAR)/glib/2.78.* ] ; then $(BREW_BIN) install glib ; else printf "$(green)glib 2.78.*$(normal) is already installed\n" ; fi
 
 .PHONY: _darwin-tool-iconv
 _darwin-tool-iconv:
-	@if [ ! -d $(HOMEBREW_CELLAR)/libiconv/1.* ] ; then $(BREW_BIN) install libiconv ; else echo "libiconv 1.* is already installed" ; fi
+	@if [ ! -d $(HOMEBREW_CELLAR)/libiconv/1.* ] ; then $(BREW_BIN) install libiconv ; else printf "$(green)libiconv 1.*$(normal) is already installed\n" ; fi
 
 #$(info <--- .make/os-tools-darwin.mk)
 
