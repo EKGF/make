@@ -5,6 +5,8 @@ _MK_OS_MK_ := 1
 #
 #$(info UNAME_M=$(UNAME_M) UNAME_S=$(UNAME_S) UNAME_O=$(UNAME_O) OS=$(OS) a)
 
+CURRENT_INTERACTIVE_SHELL := $(SHELL)
+
 ifeq (/usr/bin/bash,$(wildcard /usr/bin/bash))
 SHELL := /usr/bin/bash
 else

@@ -73,7 +73,7 @@ sops-edit: sops-check
 
 .PHONY: sops-shell
 sops-shell: sops-check
-	set -x ; $(SOPS_BIN) exec-env $(SOPS_KEYS_FILE) '$(SHELL) -l'
+	set -x ; $(SOPS_BIN) exec-env $(SOPS_KEYS_FILE) '$(CURRENT_INTERACTIVE_SHELL) -l'
 
 .PHONY: _sops-log-if-upgrade-needed
 ifneq ($(SOPS_VERSION),$(SOPS_VERSION_EXPECTED))
