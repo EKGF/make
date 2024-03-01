@@ -160,11 +160,10 @@ sops-exec: $(SOPS_EXEC)
 	@echo "SOPS_EXEC is $(SOPS_EXEC)"
 
 ifeq ($(SOPS_REQUIRED),1)
+$(info SOPS_REQUIRED is 1 so we're going to restart $(MAKE) in a sops shell)
 rubbish := $(shell $(MAKE) --no-print-directory SOPS_REQUIRED=0 sops-exec >/dev/null 2>&1 ; rc=$$? ; exit $${rc})
 ifeq ($(rubbish),1)
 $(error Could not generate $(SOPS_EXEC))
-else
-#$(info $(SOPS_EXEC) generated)
 endif
 endif
 

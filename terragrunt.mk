@@ -24,78 +24,84 @@ endif
 
 .PHONY: terragrunt-init
 terragrunt-init: $(TF_DIR) terragrunt-check $(TF_STATE_DIR) $(SOPS_EXEC)
-	@printf "$(bold)Terraform init on $(green)$(shell basename $(shell pwd)):$(normal)\n"
-	@# sops is still necessary here in order to be able to create the S3 backend for terraform state
-	cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAGRUNT_BIN) init $(TF_STATE_ARGS)
+	@printf "$(bold)Terragrunt $(blue)init$(black) on $(green)$(shell basename $(shell pwd)):$(normal)\n"
+	@# sops is still necessary here to be able to create the S3 backend for terraform state
+	set -x ; cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAGRUNT_BIN) init $(TF_STATE_ARGS)
 
 .PHONY: terragrunt-init-upgrade
 terragrunt-init-upgrade: $(TF_DIR) terragrunt-check $(TF_STATE_DIR)
-	@printf "$(bold)Terraform init on $(green)$(shell basename $(shell pwd)):$(normal)\n"
-	@# sops is still necessary here in order to be able to create the S3 backend for terraform state
+	@printf "$(bold)Terragrunt $(blue)init -upgrade$(black) on $(green)$(shell basename $(shell pwd)):$(normal)\n"
+	@# sops is still necessary here to be able to create the S3 backend for terraform state
 	cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAGRUNT_BIN) init -upgrade $(TF_STATE_ARGS)
 
 .PHONY: terragrunt-init-migrate
 terragrunt-init-migrate: $(TF_DIR) terragrunt-check $(TF_STATE_DIR)
-	@printf "$(bold)Terraform init on $(green)$(shell basename $(shell pwd)):$(normal)\n"
-	@# sops is still necessary here in order to be able to create the S3 backend for terraform state
+	@printf "$(bold)Terragrunt $(blue)init -migrate-state$(black) on $(green)$(shell basename $(shell pwd)):$(normal)\n"
+	@# sops is still necessary here to be able to create the S3 backend for terraform state
 	cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAGRUNT_BIN) init -migrate-state $(TF_STATE_ARGS)
+
+.PHONY: terragrunt-init-reconfigure
+terragrunt-init-reconfigure: $(TF_DIR) terragrunt-check $(TF_STATE_DIR)
+	@printf "$(bold)Terragrunt $(blue)init -reconfigure$(black) on $(green)$(shell basename $(shell pwd)):$(normal)\n"
+	@# sops is still necessary here to be able to create the S3 backend for terraform state
+	cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAGRUNT_BIN) init -reconfigure $(TF_STATE_ARGS)
 
 .PHONY: terragrunt-get
 terragrunt-get: $(TF_DIR) terragrunt-check $(TF_STATE_DIR)
-	@printf "$(bold)Terraform get on $(green)$(shell basename $(shell pwd)):$(normal)\n"
+	@printf "$(bold)Terragrunt $(blue)get$(black) on $(green)$(shell basename $(shell pwd)):$(normal)\n"
 	@# sops is still necessary here in order to be able to create the S3 backend for terraform state
 	cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAGRUNT_BIN) get $(TF_STATE_ARGS)
 
 .PHONY: terragrunt-state-list
 terragrunt-state-list: $(TF_DIR) terragrunt-check $(TF_STATE_DIR)
-	@printf "$(bold)Terraform $(blue)state-list$(black) on $(green)$(shell basename $(shell pwd)):$(normal)\n"
+	@printf "$(bold)Terragrunt $(blue)state-list$(black) on $(green)$(shell basename $(shell pwd)):$(normal)\n"
 	@# sops is still necessary here in order to be able to create the S3 backend for terraform state
 	cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAGRUNT_BIN) state list $(TF_STATE_ARGS)
 
 ifdef GREP_RESOURCE
 .PHONY: terragrunt-state-rm
 terragrunt-state-rm: $(TF_DIR) terragrunt-check $(TF_STATE_DIR)
-	@printf "$(bold)Terraform $(blue)state rm$(black) on $(green)$(shell basename $(shell pwd)):$(normal)\n"
-	@# sops is still necessary here in order to be able to create the S3 backend for terraform state
+	@printf "$(bold)Terragrunt $(blue)state rm$(black) on $(green)$(shell basename $(shell pwd)):$(normal)\n"
+	@# sops is still necessary here to be able to create the S3 backend for terraform state
 	cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAGRUNT_BIN) state list $(TF_STATE_ARGS) | grep $(GREP_RESOURCE) | \
 		while read resource ; do $(SOPS_EXEC) $(TERRAGRUNT_BIN) state rm $(TF_STATE_ARGS) $$resource ; done
 endif
 
 .PHONY: terragrunt-apply
 terragrunt-apply: $(TF_DIR) terragrunt-check sops-check $(TF_STATE_DIR)
-	@printf "$(bold)Terraform apply on $(green)$(shell basename $(shell pwd)):$(normal)\n"
+	@printf "$(bold)Terragrunt $(blue)apply$(black) on $(green)$(shell basename $(shell pwd)):$(normal)\n"
 	cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAGRUNT_BIN) apply -auto-approve $(TF_STATE_ARGS)
 
 .PHONY: terragrunt-apply-debug
 terragrunt-apply-debug: $(TF_DIR) terragrunt-check sops-check $(TF_STATE_DIR)
-	@printf "$(bold)Terraform apply on $(green)$(shell basename $(shell pwd)):$(normal)\n"
+	@printf "$(bold)Terragrunt $(blue)apply$(black) on $(green)$(shell basename $(shell pwd)):$(normal)\n"
 	cd $(TF_DIR) && TF_LOG=DEBUG $(SOPS_EXEC) $(TERRAGRUNT_BIN) apply -auto-approve $(TF_STATE_ARGS)
 
 .PHONY: terragrunt-refresh
 terragrunt-refresh: $(TF_DIR) terragrunt-check sops-check $(TF_STATE_DIR)
-	@printf "$(bold)Terraform refresh on $(green)$(shell basename $(shell pwd)):$(normal)\n"
+	@printf "$(bold)Terragrunt refresh on $(green)$(shell basename $(shell pwd)):$(normal)\n"
 	cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAGRUNT_BIN) refresh $(TF_STATE_ARGS)
 
 .PHONY: terragrunt-plan
 terragrunt-plan: $(TF_DIR) terragrunt-check sops-check $(TF_STATE_DIR)
-	@printf "$(bold)Terraform plan on $(green)$(shell basename $(shell pwd)):$(normal)\n"
+	@printf "$(bold)Terragrunt plan on $(green)$(shell basename $(shell pwd)):$(normal)\n"
 	cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAGRUNT_BIN) plan $(TF_STATE_ARGS)
 
 .PHONY: terragrunt-destroy
 terragrunt-destroy: $(TF_DIR) terragrunt-check sops-check $(TF_STATE_DIR)
-	@printf "$(bold)Terraform destroy on $(green)$(shell basename $(shell pwd)):$(normal)\n"
+	@printf "$(bold)Terragrunt destroy on $(green)$(shell basename $(shell pwd)):$(normal)\n"
 	cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAGRUNT_BIN) apply -auto-approve -destroy $(TF_STATE_ARGS)
 
 .PHONY: terragrunt-destroy-hard
 terragrunt-destroy-hard: $(TF_DIR) terragrunt-check sops-check $(TF_STATE_DIR)
-	@printf "$(bold)Terraform destroy on $(green)$(shell basename $(shell pwd)):$(normal)\n"
+	@printf "$(bold)Terragrunt destroy on $(green)$(shell basename $(shell pwd)):$(normal)\n"
 	cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAGRUNT_BIN) destroy $(TF_STATE_ARGS)
 
 .PHONY: terragrunt-import-resources
 ifdef TF_IMPORT_RESOURCES
 export TF_IMPORT_RESOURCES
 terragrunt-import-resources: $(TF_DIR) terragrunt-check sops-check $(TF_STATE_DIR)
-	@printf "$(bold)Terraform import resources $(shell basename $(shell pwd)):$(normal)\n"
+	@printf "$(bold)Terragrunt import resources $(shell basename $(shell pwd)):$(normal)\n"
 	cd $(TF_DIR) && while read address id ; do \
 		printf "$(bold)%-90s $(green)%s$(normal)\n" "$$address" "$$id"; \
 	done < <(echo "$${TF_IMPORT_RESOURCES}")
