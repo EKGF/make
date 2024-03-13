@@ -6,4 +6,6 @@ generated-*.mk
 .*.mk
 brew-install-script.sh
 .tmp/
-/.idea/workspace.xml
+.idea/workspace.xml
+.idea/copilot/chatSessions/*
+
