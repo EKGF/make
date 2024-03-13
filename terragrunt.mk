@@ -138,7 +138,7 @@ endif
 .PHONY: terragrunt-taint
 ifdef TF_TAINT_RESOURCES
 terragrunt-taint: $(TF_DIR) terragrunt-check sops-check $(TF_STATE_DIR)
-	@printf "$(bold)Terraform taint on $(green)$(shell basename $(shell pwd)):$(normal)\n"
+	@printf "$(bold)Terragrunt taint on $(green)$(shell basename $(shell pwd)):$(normal)\n"
 	cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAGRUNT_BIN) taint $(TF_STATE_ARGS) $(TF_TAINT_RESOURCES)
 else
 terragrunt-taint:
