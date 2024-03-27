@@ -32,7 +32,7 @@ PNPM_CMD := $(NPM_BIN) pnpm
 ifdef PNPM_BIN
 PNPM_VERSION := $(shell $(PNPM_BIN) --version 2>/dev/null | cut -d\  -f2)
 endif
-PNPM_VERSION_EXPECTED := 8.15.4
+PNPM_VERSION_EXPECTED := 8.15.5
 ifeq ($(PNPM_VERSION),$(PNPM_VERSION_EXPECTED))
 PNPM_CHECKED := 1
 else
