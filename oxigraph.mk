@@ -116,6 +116,10 @@ oxigraph-clean: \
 .PHONY: oxigraph-clean-transform-serve
 oxigraph-clean-transform-serve: \
 	oxigraph-clean \
+	oxigraph-reload \
+	oxigraph-count-before-transform \
+	_oxigraph-run-transforms-no-reload \
+	oxigraph-count-after-transform\
 	oxigraph-run-transforms \
 	oxigraph-serve
 
