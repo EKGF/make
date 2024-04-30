@@ -58,11 +58,11 @@ open-next-clean: nextjs-clean
 
 .PHONY: _open-next-info
 _open-next-info:
-	@printf "$(green)$(bold)Building the Digital Twin UI$(normal)\n"
+	@printf "$(green)$(bold)Building the Open-Next UI$(normal)\n"
 
 .PHONY: open-next-build
 open-next-build: pnpm-check _open-next-info open-next-prerequisites
-	@printf "$(bold)Building the Digital Twin UI:$(normal)\n"
+	@printf "$(bold)Building the Open-Next UI:$(normal)\n"
 	@cd $(GIT_ROOT) && set -x ; \
 	$(PNPM_BIN) dlx open-next@$(OPEN_NEXT_VERSION_EXPECTED) build --minify
 	@printf "$(green)$(bold)Finished building the Digital Twin UI$(normal)\n"
