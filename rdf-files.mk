@@ -14,6 +14,7 @@ MK_DIR := $(GIT_ROOT)/.make
 endif
 
 include $(MK_DIR)/os.mk
+include $(MK_DIR)/story-sparql-files.mk
 
 ifndef RDF_STATIC_DATASET_DIR
 RDF_STATIC_DATASET_DIR := $(GIT_ROOT)/static-dataset
@@ -42,7 +43,7 @@ DATASET_NT_FILES := $(shell find -L $(RDF_STATIC_DATASET_DIR) -mindepth 1 -a -na
 DATASET_TTL_FILES := $(shell find -L $(RDF_STATIC_DATASET_DIR) -mindepth 1 -a -name '*.ttl' -a \! -path "./.git*" -print 2>/dev/null | sort)
 RDF_NT_FILES := $(DATASET_NT_FILES)
 RDF_TTL_FILES := $(ONTOLOGY_FILES) $(USE_CASE_FILES) $(DATASET_TTL_FILES)
-RDF_FILES := $(RDF_NT_FILES) $(RDF_TTL_FILES)
+RDF_FILES := $(RDF_NT_FILES) $(RDF_TTL_FILES) $(STORY_SPARQL_TTL_FILES)
 
 $(TEST_TMP)/rdf-files-to-load.txt: $(RDF_TTL_FILES)
 	@echo $? | tr ' ' '\n' | sort > $@
