@@ -17,7 +17,7 @@ include $(MK_DIR)/rustup.mk
 include $(MK_DIR)/brew.mk
 include $(MK_DIR)/curl.mk
 
-LLVM_VERSION_EXPECTED := 18.1.4
+LLVM_VERSION_EXPECTED := 18.1.5
 LLVM_MAIN_VERSION_EXPECTED := $(shell echo $(LLVM_VERSION_EXPECTED) | cut -d. -f1)
 
 ifneq ($(wildcard $(HOMEBREW_CELLAR)/llvm/$(LLVM_VERSION_EXPECTED)/lib),)

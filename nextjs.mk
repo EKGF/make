@@ -24,13 +24,18 @@ nextjs-clean: pnpm-clean
 	@rm -rf $(GIT_ROOT)/.open-next
 
 .PHONY: nextjs-upgrade
-nextjs-upgrade: pnpm-check
+nextjs-upgrade: pnpm-check os-tools-install
 	@echo "Upgrading NextJS (and OpenNext)"
 	@echo "First, upgrade all global packages"
 	@$(PNPM_BIN) upgrade --dir $(GIT_ROOT) --global
 	@$(PNPM_BIN) add --global shadcn-ui@latest
 	@echo "Then, upgrade react"
 	@$(PNPM_BIN) add --dir $(GIT_ROOT) --save-prod react@latest react-dom@latest
+	@echo "Then, upgrade react-email"
+	@$(PNPM_BIN) add --dir $(GIT_ROOT) --save-prod react-email@latest
+	@echo "Then, upgrade playwright"
+	@$(PNPM_BIN) add --dir $(GIT_ROOT) --save-prod @playwright/test@latest
+	@$(PNPM_BIN) exec playwright install
 	@echo "Then, upgrade nextjs"
 	@$(PNPM_BIN) add --dir $(GIT_ROOT) --save-prod next@latest
 	@echo "Then, upgrade OpenNext"

@@ -69,14 +69,14 @@ _linux-tool-gtk: apt-update
 
 .PHONY: _linux-tool-atk
 _linux-tool-atk: apt-update
-	@dpkg -s librust-atk-dev >/dev/null 2>&1 || \
+	-@dpkg -s librust-atk-dev >/dev/null 2>&1 || \
 	$(APT_INSTALL) librust-atk-dev
-	@dpkg -s librust-atk-sys-dev >/dev/null 2>&1 || \
+	-@dpkg -s librust-atk-sys-dev >/dev/null 2>&1 || \
 	$(APT_INSTALL) librust-atk-sys-dev
 
 .PHONY: _linux-tool-ayatana
 _linux-tool-ayatana: apt-update
-	@dpkg -s libayatana-appindicator3-dev >/dev/null 2>&1 || \
+	-@dpkg -s libayatana-appindicator3-dev >/dev/null 2>&1 || \
 	$(APT_INSTALL) libayatana-appindicator3-dev
 
 .PHONY: _linux-tool-svg
@@ -119,6 +119,36 @@ _linux-tool-ssl: apt-update
 	@dpkg -s libssl-dev >/dev/null 2>&1 || \
 	$(APT_INSTALL) libssl-dev
 
+# Required for Playwright support etc
+.PHONY: _linux-tool-libnss3
+_linux-tool-libnss3: apt-update
+	@dpkg -s libnss3 >/dev/null 2>&1 || \
+	$(APT_INSTALL) libnss3
+
+# Required for Playwright support etc
+.PHONY: _linux-tool-libnspr4
+_linux-tool-libnspr4: apt-update
+	@dpkg -s libnspr4 >/dev/null 2>&1 || \
+	$(APT_INSTALL) libnspr4
+
+# Required for Playwright support etc
+.PHONY: _linux-tool-libgtk-3-0
+_linux-tool-libgtk-3-0: apt-update
+	@dpkg -s libgtk-3-0 >/dev/null 2>&1 || \
+	$(APT_INSTALL) libgtk-3-0
+
+# Required for Playwright support etc
+.PHONY: _linux-tool-libasound2
+_linux-tool-libasound2: apt-update
+	-@dpkg -s libasound2 >/dev/null 2>&1 || \
+	$(APT_INSTALL) libasound2
+
+# Required for Playwright support etc
+.PHONY: _linux-tool-libgbm-dev
+_linux-tool-libgbm-dev: apt-update
+	@dpkg -s libgbm-dev >/dev/null 2>&1 || \
+	$(APT_INSTALL) libgbm-dev
+
 .PHONY: _linux-tool-appstream
 _linux-tool-appstream: apt-update
 	@dpkg -s appstream >/dev/null 2>&1 || \
@@ -132,6 +162,7 @@ _linux-tool-bsdtar: apt-update
 .PHONY: _linux-tools-install-info
 _linux-tools-install-info:
 	@echo "Installing linux tools (primarily via apt)"
+	@sudo apt --yes autoremove
 
 .PHONY: linux-tools-install
 ifeq ($(RUNNING_IN_DOCKER),1)
@@ -156,6 +187,11 @@ linux-tools-install: _linux-tools-install-info \
 	_linux-tool-fontconfig1 \
 	_linux-tool-freetype6 \
 	_linux-tool-graphite2 \
+	_linux-tool-libnss3 \
+	_linux-tool-libnspr4 \
+	_linux-tool-libgtk-3-0 \
+	_linux-tool-libasound2 \
+	_linux-tool-libgbm-dev \
 	sops-check
 	@echo "Linux tools have been installed"
 endif
