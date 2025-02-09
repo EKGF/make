@@ -19,7 +19,7 @@ TERRAFORM_BIN := $(call where-is-binary,terraform)
 ifdef TERRAFORM_BIN
 TERRAFORM_VERSION := $(shell $(TERRAFORM_BIN) --version 2>/dev/null | head -n1 | cut -dv -f2)
 endif
-TERRAFORM_VERSION_EXPECTED := 1.8.3
+TERRAFORM_VERSION_EXPECTED := 1.9.3
 ifeq ($(TERRAFORM_VERSION),$(TERRAFORM_VERSION_EXPECTED))
 TERRAFORM_CHECKED := 1
 else

@@ -47,7 +47,11 @@ nextjs-upgrade: pnpm-check os-tools-install
 
 shadcn-cli-install:
 	@echo "Installing shadcn-cli"
-	@$(PNPM_BIN) add --global shadcn-ui@latest
+	#@$(PNPM_BIN) add --global shadcn-ui@latest
+	# See https://github.com/shadcn-ui/ui/issues/648#issuecomment-2315604382
+	# because of this, we need to use npm here because pnpm sometimes failes
+	# to install the shadcn-cli.
+	@$(NPM_BIN) install --global shadcn-cli
 
 #
 # The UI heavily relies on the shadcn-ui components.
@@ -57,9 +61,10 @@ shadcn-cli-install:
 # directory. shadcn provides a CLI to do that which is what we're using here.
 # Run `make shadcn-update` from time to time.
 #
-shadcn-update: shadcn-cli-install
+shadcn-update: pnpm-check
 	@echo "Updating all shadcn-ui components"
-	@$(PNPM_BIN) exec shadcn-ui add --yes --overwrite --cwd $(GIT_ROOT) --all
+	#@$(PNPM_BIN) dlx shadcn-ui@latest add --yes --overwrite --cwd $(GIT_ROOT) --all
+	$(NPX_BIN) --force shadcn@latest add --yes --overwrite --cwd $(GIT_ROOT) --all
 
 #$(info <--- .make/nextjs.mk)
 

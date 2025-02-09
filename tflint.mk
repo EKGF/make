@@ -20,7 +20,7 @@ ifdef TFLINT_BIN
 TFLINT_VERSION := $(shell $(TFLINT_BIN) --version 2>/dev/null | head -n1 | cut -d\  -f3)
 endif
 # keep the line below in sync with version published at https://formulae.brew.sh/formula/tflint
-TFLINT_VERSION_EXPECTED := 0.50.3
+TFLINT_VERSION_EXPECTED := 0.53.0
 ifeq ($(TFLINT_VERSION),$(TFLINT_VERSION_EXPECTED))
 TFLINT_CHECKED := 1
 else

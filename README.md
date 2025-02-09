@@ -7,7 +7,7 @@ This repo contains one `.mk` file per topic to be included
 by other `.mk` files or by top level `Makefile` files (such as [/Makefile](../Makefile))
 in your own repo.
 
-These so-called "make files" are used by the infamous 
+These so-called "make files" are used by the infamous
 [GNU Make utility](https://www.gnu.org/software/make/manual/html_node/index.html)
 which is an ancient but still beneficial tool to get tasks executed in the
 right order.
@@ -79,13 +79,17 @@ Then use `brew install make` to install GNU Make.
 
 ### On Windows:
 
-If you have ["Chocolatey"](https://chocolatey.org/install) installed 
+If you have ["Chocolatey"](https://chocolatey.org/install) installed
 you can simply use:
 
 ```
 choco upgrade chocolatey
 choco install make
 ```
+
+## How to contribute
+
+Please see our [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute to this repository, including setting up GPG signing and using conventional commits.
 
 Articles:
 
@@ -98,12 +102,11 @@ Why use ancient technology like GNU Make? Rather than using something more moder
 - Even though GNU Make is ancient, it is still very useful and widely used, especially in the C,C++ and Linux world.
 - GNU Make is relative simple and easy to use and very fast.
 - GNU Make is available on all platforms, including Windows, Linux and Mac OS.
-- We have experience doing the same with other technologies such as Chef or giant Bash scripts, 
-  but that turned out to be more complex and less maintainable than using GNU Make. 
+- We have experience doing the same with other technologies such as Chef or giant Bash scripts,
+  but that turned out to be more complex and less maintainable than using GNU Make.
   And requires more specific knowledge in the team, we want every developer to be able to use and improve this,
   not just your local Chef expert.
 
 ## Principles
 
 - Reuse existing package managers as much as possible such as HomeBrew, Chocolatey, apt-get, yum, etc.
-

@@ -32,7 +32,7 @@ PNPM_CMD := $(NPM_BIN) pnpm
 ifdef PNPM_BIN
 PNPM_VERSION := $(shell $(PNPM_BIN) --version 2>/dev/null | cut -d\  -f2)
 endif
-PNPM_VERSION_EXPECTED := 9.1.1
+PNPM_VERSION_EXPECTED := 9.9.0
 ifeq ($(PNPM_VERSION),$(PNPM_VERSION_EXPECTED))
 PNPM_CHECKED := 1
 else
@@ -59,7 +59,8 @@ pnpm-force-check: _pnpm-check-info pnpm-install-itself-first
 	@printf "$(green)checked pnpm $(PNPM_VERSION_EXPECTED)$(normal)\n"
 	@printf " - PNPM_BIN=$(PNPM_BIN)\n"
 	PNPM_VERSION_COMMAND_LINE=$$($(PNPM_BIN) --version 2>/dev/null | cut -d\  -f2) && printf "$(red)Detected pnpm version $${PNPM_VERSION_COMMAND_LINE} on the command line using \"$(PNPM_BIN) --version\"$(normal)\n"
-	$(NPX_BIN) install pnpm > /dev/null 2>&1 || true
+	#$(NPX_BIN) install pnpm > /dev/null 2>&1 || true
+	$(COREPACK_BIN) install --global pnpm@$(PNPM_VERSION_EXPECTED)
 	@printf " - NPX_BIN=$(NPX_BIN)\n"
 	PNPM_VERSION_COREPACK=$$(echo Y | $(NPX_BIN) pnpm --version 2>/dev/null | cut -d\  -f2) && printf "$(red)Detected pnpm version $${PNPM_VERSION_COREPACK} on the command line using \"$(NPX_BIN) pnpm --version\"$(normal)\n"
 
