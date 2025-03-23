@@ -21,7 +21,7 @@ OPEN_NEXT_BIN := npx open-next
 ifdef OPEN_NEXT_BIN
 OPEN_NEXT_VERSION := $(shell $(PNPM_BIN) list --global open-next 2>/dev/null | grep open-next | cut -d\  -f2)
 endif
-OPEN_NEXT_VERSION_EXPECTED := 2.3.2
+OPEN_NEXT_VERSION_EXPECTED := 3.1.3
 OPEN_NEXT_MAIN_VERSION_EXPECTED := $(shell echo $(OPEN_NEXT_VERSION_EXPECTED) | cut -d. -f1)
 ifeq ($(OPEN_NEXT_VERSION),$(OPEN_NEXT_VERSION_EXPECTED))
 OPEN_NEXT_CHECKED := 1
@@ -65,13 +65,13 @@ open-next-build: pnpm-check _open-next-info open-next-prerequisites
 	@printf "$(bold)Building the Open-Next UI:$(normal)\n"
 	@cd $(GIT_ROOT) && set -x ; \
 	$(PNPM_BIN) dlx open-next@$(OPEN_NEXT_VERSION_EXPECTED) build --minify
-	@printf "$(green)$(bold)Finished building the Digital Twin UI$(normal)\n"
+	@printf "$(green)$(bold)Finished building the Open-Next UI$(normal)\n"
 
 .PHONY: open-next-build-debug
 open-next-build-debug: _open-next-info pnpm-check open-next-prerequisites
 	@cd $(GIT_ROOT) && set -x ; \
 	OPEN_NEXT_DEBUG=true $(PNPM_BIN) dlx open-next@$(OPEN_NEXT_VERSION_EXPECTED) build
-	@printf "$(green)$(bold)Finished building the Digital Twin UI$(normal)\n"
+	@printf "$(green)$(bold)Finished building the Open-Next UI$(normal)\n"
 
 .PHONY: open-next-prerequisites
 open-next-prerequisites: brew-check $(BREW_PACKAGES)

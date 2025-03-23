@@ -56,7 +56,7 @@ load: oxigraph-load
 	@echo "All RDF files have been loaded into OxiGraph"
 
 #
-# Launch the dev version of the Digital Twin UI on your local machine
+# Launch the dev version of the Open-Next UI on your local machine
 #
 .PHONY: ui-run
 ui-run: pnpm-run-dev

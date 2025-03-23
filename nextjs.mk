@@ -10,6 +10,10 @@ ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
 endif
 
+NEXT_VERSION := "canary"
+SHADCN_VERSION := "canary"
+TAILWINDCSS_VERSION := "latest"
+
 include $(MK_DIR)/os.mk
 include $(MK_DIR)/pnpm.mk
 
@@ -28,30 +32,29 @@ nextjs-upgrade: pnpm-check os-tools-install
 	@echo "Upgrading NextJS (and OpenNext)"
 	@echo "First, upgrade all global packages"
 	@$(PNPM_BIN) upgrade --dir $(GIT_ROOT) --global
-	@$(PNPM_BIN) add --global shadcn-ui@latest
+	@echo "Then, upgrade all local packages"
+	@$(PNPM_BIN) update --dir $(GIT_ROOT) --latest
+	@echo "Then, run install to sync node_modules dir with package.json"
+	@$(PNPM_BIN) install --dir $(GIT_ROOT)
 	@echo "Then, upgrade react"
-	@$(PNPM_BIN) add --dir $(GIT_ROOT) --save-prod react@latest react-dom@latest
-	@echo "Then, upgrade react-email"
-	@$(PNPM_BIN) add --dir $(GIT_ROOT) --save-prod react-email@latest
+	@$(PNPM_BIN) add --dir $(GIT_ROOT) --workspace-root --save-prod react@latest react-dom@latest
+	@echo "Then, upgrade --dir $(GIT_ROOT) react-email"
+	@$(PNPM_BIN) add --dir $(GIT_ROOT) --workspace-root --save-prod react-email@latest
 	@echo "Then, upgrade playwright"
-	@$(PNPM_BIN) add --dir $(GIT_ROOT) --save-prod @playwright/test@latest
+	@$(PNPM_BIN) add --dir $(GIT_ROOT) --workspace-root --save-prod @playwright/test@latest
 	@$(PNPM_BIN) exec playwright install
-	@echo "Then, upgrade nextjs"
-	@$(PNPM_BIN) add --dir $(GIT_ROOT) --save-prod next@latest
+	@echo "Then, run install to sync node_modules dir with package.json"
+	@$(PNPM_BIN) install --dir $(GIT_ROOT)
+	@echo "Then, upgrade Next.js"
+	@$(PNPM_BIN) add --dir $(GIT_ROOT) --workspace-root --save-prod next@${NEXT_VERSION} 
+	@$(PNPM_BIN) add --dir $(GIT_ROOT) --workspace-root --save-prod eslint-config-next@${NEXT_VERSION}
+	@$(PNPM_BIN) add --dir $(GIT_ROOT) --workspace-root --save-prod shadcn@${SHADCN_VERSION}
+	@$(PNPM_BIN) add --dir $(GIT_ROOT) --workspace-root --save-dev @next/codemod@${NEXT_VERSION}
 	@echo "Then, upgrade OpenNext"
-	@$(PNPM_BIN) add --dir $(GIT_ROOT) --save-prod open-next@latest
-	@echo "Then, upgrade eslint"
-	@$(PNPM_BIN) add --dir $(GIT_ROOT) --save-prod eslint-config-next@latest
+	@$(PNPM_BIN) add --dir $(GIT_ROOT) --workspace-root --save-prod open-next@latest
 	@echo "Then, upgrade everything else"
 	@$(PNPM_BIN) upgrade --dir $(GIT_ROOT) --recursive
 
-shadcn-cli-install:
-	@echo "Installing shadcn-cli"
-	#@$(PNPM_BIN) add --global shadcn-ui@latest
-	# See https://github.com/shadcn-ui/ui/issues/648#issuecomment-2315604382
-	# because of this, we need to use npm here because pnpm sometimes failes
-	# to install the shadcn-cli.
-	@$(NPM_BIN) install --global shadcn-cli
 
 #
 # The UI heavily relies on the shadcn-ui components.
@@ -63,8 +66,30 @@ shadcn-cli-install:
 #
 shadcn-update: pnpm-check
 	@echo "Updating all shadcn-ui components"
-	#@$(PNPM_BIN) dlx shadcn-ui@latest add --yes --overwrite --cwd $(GIT_ROOT) --all
-	$(NPX_BIN) --force shadcn@latest add --yes --overwrite --cwd $(GIT_ROOT) --all
+	rm -rf $(GIT_ROOT)/src/components/ui || true
+	mkdir -p $(GIT_ROOT)/src/components/ui || true
+	$(PNPM_BIN) update --dir $(GIT_ROOT) "@radix-ui/*" cmdk lucide-react recharts tailwind-merge clsx --latest
+	$(PNPM_BIN) dlx shadcn@${SHADCN_VERSION} add --yes --overwrite --cwd $(GIT_ROOT) --all
+
+.PHONY: tailwindcss-install
+tailwindcss-install: pnpm-check
+	@echo "Installing Tailwind CSS packages (for a NextJS project)"
+	$(PNPM_BIN) add tailwindcss@${TAILWINDCSS_VERSION} @tailwindcss/postcss@${TAILWINDCSS_VERSION} postcss@latest
+
+shadcn-init: tailwindcss-install pnpm-check
+	@echo "Initializing the shadcn-ui project"
+	rm -rf $(GIT_ROOT)/src/components/ui || true
+	mkdir -p $(GIT_ROOT)/src/components/ui || true
+	touch src/styles/globals.css
+	$(PNPM_BIN) update --dir $(GIT_ROOT) "@radix-ui/*" cmdk lucide-react recharts tailwind-merge clsx --latest
+	$(PNPM_BIN) dlx shadcn@${SHADCN_VERSION} init --base-color slate --yes --force  --cwd $(GIT_ROOT) --src-dir 
+
+shadcn-add-all-components: pnpm-check
+	@echo "Add all shadcn-ui components"
+	rm -rf $(GIT_ROOT)/src/components/ui || true
+	rm -f $(GIT_ROOT)/src/hooks/use-mobile.ts || true
+	# For some reason the --overwrite flag doesn't work when adding all components with --all
+	$(PNPM_BIN) dlx shadcn@${SHADCN_VERSION} add --all --yes --cwd $(GIT_ROOT) --src-dir --overwrite --path src/components/ui
 
 #$(info <--- .make/nextjs.mk)
 

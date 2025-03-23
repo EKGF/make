@@ -32,7 +32,7 @@ PNPM_CMD := $(NPM_BIN) pnpm
 ifdef PNPM_BIN
 PNPM_VERSION := $(shell $(PNPM_BIN) --version 2>/dev/null | cut -d\  -f2)
 endif
-PNPM_VERSION_EXPECTED := 10.2.1
+PNPM_VERSION_EXPECTED := 10.6.1
 ifeq ($(PNPM_VERSION),$(PNPM_VERSION_EXPECTED))
 PNPM_CHECKED := 1
 else
@@ -105,11 +105,12 @@ pnpm-install: pnpm-check
 
 .PHONY: pnpm-upgrade-pnpm
 pnpm-upgrade-pnpm: $(PNPM_BIN)
-	$(PNPM_BIN) add -g pnpm
+	# $(PNPM_BIN) add -g pnpm
+	$(PNPM_BIN) self-update
 
 .PHONY: pnpm-update
 pnpm-update: pnpm-check pnpm-upgrade-pnpm
-	cd $(GIT_ROOT) && $(PNPM_BIN) update
+	cd $(GIT_ROOT) && rm -rf node_modules && rm -f pnpm-lock.yaml && $(PNPM_BIN) update
 
 .PHONY: pnpm-run-dev
 pnpm-run-dev: pnpm-check

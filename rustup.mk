@@ -198,25 +198,27 @@ rustup-toolchain-install: _rustup-toolchain-install-no-info rustup-info
 ifdef RUSTUP_BIN
 _rustup-toolchain-install-no-info:
 	@printf "$(bold)rustup-toolchain-install:$(normal)\n"
-	@printf "Installing rust via rustup\n"
+	@printf "Installing rust $(RUSTUP_TOOLCHAIN) via rustup\n"
 	@if [[ "$(RUSTUP_TOOLCHAIN)" == "stable" ]] ; then \
+		printf "For all these targets: $(RUSTUP_ALL_TARGETS_STABLE)\n" ; \
 		RUSTUP_INIT_SKIP_PATH_CHECK=yes $(RUSTUP_BIN) toolchain install \
 			stable \
-			--target $(RUSTUP_ALL_TARGETS_STABLE) \
+			--target $(shell echo "$(RUSTUP_ALL_TARGETS_STABLE)" | tr ' ' ',') \
 			--profile default \
 			--allow-downgrade \
 			--force-non-host ; \
 	else \
+		printf "For all these targets: $(RUSTUP_ALL_TARGETS)\n" ; \
 		RUSTUP_INIT_SKIP_PATH_CHECK=yes $(RUSTUP_BIN) toolchain install \
 			$(RUSTUP_TOOLCHAIN) \
-			--target $(RUSTUP_ALL_TARGETS) \
+			--target $(shell echo "$(RUSTUP_ALL_TARGETS)" | tr ' ' ',') \
 			--profile default \
 			--allow-downgrade \
 			--force-non-host ; \
 	fi
 	@$(RUSTUP_BIN) toolchain install \
 		nightly \
-		--target $(RUSTUP_ALL_TARGETS) \
+		--target $(shell echo "$(RUSTUP_ALL_TARGETS)" | tr ' ' ',') \
 		--profile default \
 		--allow-downgrade \
 		--force-non-host
@@ -230,7 +232,7 @@ _rustup-toolchain-install-no-info:
   			--quiet -y \
   			--no-update-default-toolchain \
   			--default-toolchain $(RUSTUP_TOOLCHAIN) \
-  			--target $(RUSTUP_ALL_TARGETS_STABLE) \
+  			--target $(shell echo "$(RUSTUP_ALL_TARGETS_STABLE)" | tr ' ' ',') \
   			--profile default ; \
   	else \
 		RUSTUP_INIT_SKIP_PATH_CHECK=yes $(RUSTUP_INIT_BIN) \
@@ -268,11 +270,13 @@ rustup-check-components: rustup-check
 	@printf "$(bold)rustup-check-components:$(normal)\n"
 	@#echo "RUSTUP_TOOLCHAIN=$${RUSTUP_TOOLCHAIN}"
 	@#echo "RUSTUP_ALL_TARGETS=$${RUSTUP_ALL_TARGETS}"
-	@printf "Check rustup toolchain and components\nfor default toolchain $(green)$(RUSTUP_TOOLCHAIN)$(normal)\n and targets\n$(green)$(RUSTUP_ALL_TARGETS)$(normal):"
+	@printf "Check rustup toolchain and components"
+	@printf "for default toolchain $(green)$(RUSTUP_TOOLCHAIN)$(normal)"
+	@printf "and targets $(green)$(RUSTUP_ALL_TARGETS)$(normal):"
 	$(RUSTUP_BIN) \
 		toolchain install $(RUSTUP_TOOLCHAIN) \
-		--target $(RUSTUP_ALL_TARGETS) \
-		--component rust-docs rustc rust-std rust-src rustfmt clippy rust-analyzer
+		--target $(shell echo "$(RUSTUP_ALL_TARGETS_STABLE)" | tr ' ' ',') \
+		--component rust-docs,rustc,rust-std,rust-src,rustfmt,clippy,rust-analyzer
 else
 rustup-check-components:
 endif
