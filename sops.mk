@@ -69,7 +69,11 @@ endif
 
 .PHONY: sops-edit
 sops-edit: sops-check
-	$(SOPS_BIN) $(SOPS_KEYS_FILE)
+	$(SOPS_BIN) $(SOPS_KEYS_FILE) ; rc=$$? ; \
+	if ((rc != 200)) ; then \
+		echo "Sops edit failed with rc=$$rc" ; \
+		exit $$rc ; \
+	fi
 
 .PHONY: sops-shell
 sops-shell: sops-check

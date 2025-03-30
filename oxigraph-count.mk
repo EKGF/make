@@ -21,18 +21,18 @@ OXIGRAPH_MINIMUM_NUMBER_OF_SUBJECTS := 125
 
 OXIGRAPH_SPARQL_COUNT_ROOT := $(GIT_ROOT)/sparql/count
 
-SPARQL_COUNT_TESTS := $(wildcard $(OXIGRAPH_SPARQL_COUNT_ROOT)/count-*.sparql)
-SPARQL_COUNT_RESULT_FILES1 := $(SPARQL_COUNT_TESTS:.sparql=-before-transformation.tmp.csv)
-SPARQL_COUNT_RESULT_FILES2 := $(SPARQL_COUNT_TESTS:.sparql=-after-transformation.tmp.csv)
+SPARQL_COUNT_TESTS := $(wildcard $(OXIGRAPH_SPARQL_COUNT_ROOT)/count-*.rq)
+SPARQL_COUNT_RESULT_FILES1 := $(SPARQL_COUNT_TESTS:.rq=-before-transformation.tmp.csv)
+SPARQL_COUNT_RESULT_FILES2 := $(SPARQL_COUNT_TESTS:.rq=-after-transformation.tmp.csv)
 
 OXIGRAPH_COUNTS_REPORT1 := $(TEST_TMP)/report-counts-before-transformation.csv
 OXIGRAPH_COUNTS_REPORT2 := $(TEST_TMP)/report-counts-after-transformation.csv
 
-count%-before-transformation.tmp.csv: count%.sparql
+count%-before-transformation.tmp.csv: count%.rq
 	@file="$$(echo $? | sed 's@$(GIT_ROOT)/@@g')" ; printf "Counting: $(green)$${file}$(normal)\n"
 	@$(OXIGRAPH_BIN) --location $(OXIGRAPH_LOCATION) query --query-file $? --results-file $@
 
-count%-after-transformation.tmp.csv: count%.sparql
+count%-after-transformation.tmp.csv: count%.rq
 	@file="$$(echo $? | sed 's@$(GIT_ROOT)/@@g')" ; printf "Counting: $(green)$${file}$(normal)\n"
 	@$(OXIGRAPH_BIN) --location $(OXIGRAPH_LOCATION) query --query-file $? --results-file $@
 

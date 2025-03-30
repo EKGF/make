@@ -26,6 +26,10 @@ else
 cog-check: cargo-install-cocogitto
 endif
 
+.PHONY: cog-bump
+cog-bump: cog-check
+	@$(COG_BIN) bump --patch
+
 #$(info <--- .make/cargo-cocogitto.mk)
 
 endif # _MK_CARGO_COCOGITTO_MK_

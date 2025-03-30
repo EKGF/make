@@ -22,12 +22,12 @@ OXIGRAPH_MINIMUM_NUMBER_OF_SUBJECTS := 125
 
 OXIGRAPH_SPARQL_ASK_ROOT := $(GIT_ROOT)/sparql/test
 
-SPARQL_ASK_TESTS := $(wildcard $(OXIGRAPH_SPARQL_ASK_ROOT)/ask-*.sparql)
-SPARQL_ASK_RESULT_FILES := $(SPARQL_ASK_TESTS:.sparql=.tmp.csv)
+SPARQL_ASK_TESTS := $(wildcard $(OXIGRAPH_SPARQL_ASK_ROOT)/ask-*.rq)
+SPARQL_ASK_RESULT_FILES := $(SPARQL_ASK_TESTS:.rq=.tmp.csv)
 
 OXIGRAPH_TEST_REPORT := $(TEST_TMP)/report-tests.csv
 
-ask-%.tmp.csv: ask-%.sparql
+ask-%.tmp.csv: ask-%.rq
 	@file="$$(echo $? | sed 's@$(GIT_ROOT)/@@g')" ; printf "Test: $(green)$${file}$(normal)\n"
 	@$(OXIGRAPH_BIN) --location $(OXIGRAPH_LOCATION) query --query-file $? --results-file $@
 

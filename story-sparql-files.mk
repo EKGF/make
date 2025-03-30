@@ -20,7 +20,7 @@ ifndef STORY_SPARQL_USE_CASE_DIR
 STORY_SPARQL_USE_CASE_DIR := $(GIT_ROOT)/use-case
 endif
 
-STORY_SPARQL_FILES := $(shell find -L $(STORY_SPARQL_USE_CASE_DIR) -mindepth 1 -a -name '*.sparql' -a \! -path "./.git*" -print 2>/dev/null | sort)
+STORY_SPARQL_FILES := $(shell find -L $(STORY_SPARQL_USE_CASE_DIR) -mindepth 1 -a -name '*.rq' -a \! -path "./.git*" -print 2>/dev/null | sort)
 STORY_SPARQL_TTL_FILES := $(STORY_SPARQL_FILES:=.ttl)
 
 .INTERMEDIATE: $(STORY_SPARQL_TTL_FILES)

@@ -21,12 +21,12 @@ OXIGRAPH_MINIMUM_NUMBER_OF_SUBJECTS := 125
 
 OXIGRAPH_SPARQL_TRANSFORM_ROOT := $(GIT_ROOT)/sparql/transform
 
-SPARQL_TRANSFORM_TESTS := $(wildcard $(OXIGRAPH_SPARQL_TRANSFORM_ROOT)/transform-*.sparql)
-SPARQL_TRANSFORM_RESULT_FILES := $(SPARQL_TRANSFORM_TESTS:.sparql=.tmp.csv)
+SPARQL_TRANSFORM_TESTS := $(wildcard $(OXIGRAPH_SPARQL_TRANSFORM_ROOT)/transform-*.rq)
+SPARQL_TRANSFORM_RESULT_FILES := $(SPARQL_TRANSFORM_TESTS:.rq=.tmp.csv)
 
 OXIGRAPH_TRANSFORM_REPORT := $(TEST_TMP)/report-transforms.tmp.csv
 
-transform-%.tmp.csv: transform-%.sparql
+transform-%.tmp.csv: transform-%.rq
 	@rm -f $@ >/dev/null 2>&1 || true
 	@file="$$(echo $? | sed 's@$(GIT_ROOT)/@@g')" ; printf "Transforming: $(green)$${file}$(normal)\n"
 	@$(OXIGRAPH_BIN) --location $(OXIGRAPH_LOCATION) update --update-file $?
