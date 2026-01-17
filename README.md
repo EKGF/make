@@ -26,6 +26,7 @@ right order.
 - [LLVM / Clang](./llvm.mk)
 - [Curl](./curl.mk)
 - [Docker](./docker.mk)
+- [dotenvage](./dotenvage.mk)
 - [Git](./git.mk)
 - [JQ](./jq.mk)
 - [GNU Make](./make.mk)
