@@ -53,7 +53,7 @@ oxigraph-load-flags-delete:
 	@rm -f $(ONTOLOGY_FILES_LOADED_FLAGS) $(TTL_FILES_LOADED_FLAGS) $(NT_FILES_LOADED_FLAGS) >/dev/null 2>&1 || true
 
 .PHONY: oxigraph-load
-oxigraph-load: $(ONTOLOGY_FILES_LOADED_FLAGS) $(RDF_FILES_LOADED_FLAGS)
+oxigraph-load: oxigraph-kill $(ONTOLOGY_FILES_LOADED_FLAGS) $(RDF_FILES_LOADED_FLAGS)
 
 .PHONY: oxigraph-reload
 oxigraph-reload: oxigraph-load-flags-delete oxigraph-load
