@@ -10,6 +10,16 @@ ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
 endif
 
+#
+# Terragrunt support is disabled by default.
+# Set USE_TERRAGRUNT=1 to enable Terragrunt functionality.
+# Requires USE_TERRAFORM=1.
+#
+ifeq ($(USE_TERRAGRUNT),1)
+ifneq ($(USE_TERRAFORM),1)
+$(error USE_TERRAGRUNT=1 requires USE_TERRAFORM=1)
+endif
+
 include $(MK_DIR)/os.mk
 include $(MK_DIR)/brew.mk
 include $(MK_DIR)/terraform.mk
@@ -49,6 +59,8 @@ endif
 terragrunt-install: brew-check
 	@printf "Installing $(bold)terragrunt $(TERRAGRUNT_VERSION_EXPECTED)$(normal) via brew:\n"
 	$(BREW_BIN) install terragrunt
+
+endif # USE_TERRAGRUNT
 
 #$(info <--- .make/terragrunt-install.mk)
 

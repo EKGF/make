@@ -10,6 +10,16 @@ ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
 endif
 
+#
+# Terragrunt support is disabled by default.
+# Set USE_TERRAGRUNT=1 to enable Terragrunt functionality.
+# Requires USE_TERRAFORM=1.
+#
+ifeq ($(USE_TERRAGRUNT),1)
+ifneq ($(USE_TERRAFORM),1)
+$(error USE_TERRAGRUNT=1 requires USE_TERRAFORM=1)
+endif
+
 include $(MK_DIR)/git.mk
 include $(MK_DIR)/sops.mk
 include $(MK_DIR)/terraform.mk
@@ -147,6 +157,9 @@ else
 terragrunt-taint:
 	@printf "$(bold)No resources to taint$(normal)\n"
 endif
+
+endif # USE_TERRAGRUNT
+
 #$(info <--- .make/terragrunt.mk)
 
 endif # _MK_TERRAGRUNT_MK_

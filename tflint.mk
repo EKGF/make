@@ -10,6 +10,11 @@ ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
 endif
 
+#
+# TFLint support requires USE_TERRAFORM=1.
+#
+ifeq ($(USE_TERRAFORM),1)
+
 include $(MK_DIR)/os.mk
 include $(MK_DIR)/make.mk
 include $(MK_DIR)/brew.mk
@@ -49,6 +54,8 @@ tflint-install: brew-check $(BREW_PACKAGES)
 		$(BREW_BIN) install --force tflint ; \
 		$(BREW_BIN) unlink tflint ; \
 		$(BREW_BIN) link --force tflint )
+
+endif # USE_TERRAFORM
 
 #$(info <--- .make/tflint.mk)
 

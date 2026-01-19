@@ -10,6 +10,12 @@ ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
 endif
 
+#
+# RDFox support is disabled by default.
+# Set USE_RDFOX=1 to enable RDFox functionality.
+#
+ifeq ($(USE_RDFOX),1)
+
 include $(MK_DIR)/os.mk
 include $(MK_DIR)/curl.mk
 include $(MK_DIR)/rdf-files.mk
@@ -437,7 +443,9 @@ rdfox-meta-shell:
 .PHONY: rdfox-meta-dstore-list
 rdfox-meta-dstore-list: rdfox-check define-prefixes.rdfox endpoint-start.rdfox
 	$(RDFOX_META_CMD_AS_ADMIN) shell . 'dstore list' quit
-	
+
+endif # USE_RDFOX
+
 #$(info <--- .make/rdfox.mk)
 
 endif # _MK_RDFOX_MK_

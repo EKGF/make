@@ -9,6 +9,13 @@ endif
 ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
 endif
+
+#
+# Terraform support is disabled by default.
+# Set USE_TERRAFORM=1 to enable Terraform functionality.
+#
+ifeq ($(USE_TERRAFORM),1)
+
 ifndef TF_DIR
 TF_DIR := ./terraform
 endif
@@ -115,6 +122,8 @@ terraform-destroy: $(TF_DIR) terraform-check sops-check $(TF_STATE_DIR) $(SOPS_E
 terraform-destroy-hard: $(TF_DIR) terraform-check sops-check $(TF_STATE_DIR) $(SOPS_EXEC)
 	@printf "$(bold)Terraform destroy on $(green)$(shell basename $(shell pwd)):$(normal)\n"
 	cd $(TF_DIR) && $(SOPS_EXEC) $(TERRAFORM_BIN) destroy $(TF_STATE_ARGS)
+
+endif # USE_TERRAFORM
 
 #$(info <--- .make/terraform.mk)
 

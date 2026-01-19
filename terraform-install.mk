@@ -10,6 +10,12 @@ ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
 endif
 
+#
+# Terraform support is disabled by default.
+# Set USE_TERRAFORM=1 to enable Terraform functionality.
+#
+ifeq ($(USE_TERRAFORM),1)
+
 include $(MK_DIR)/os.mk
 include $(MK_DIR)/curl.mk
 include $(MK_DIR)/brew.mk
@@ -58,6 +64,8 @@ terraform-install-itself: _terraform-install-info brew-check
 
 .PHONY: terraform-install
 terraform-install: terraform-install-itself tflint-install
+
+endif # USE_TERRAFORM
 
 #$(info <--- .make/terraform-install.mk)
 

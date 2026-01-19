@@ -13,6 +13,12 @@ ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
 endif
 
+#
+# OpenNext support is disabled by default.
+# Set USE_OPEN_NEXT=1 to enable OpenNext functionality.
+#
+ifeq ($(USE_OPEN_NEXT),1)
+
 include $(MK_DIR)/pnpm.mk
 include $(MK_DIR)/nextjs.mk
 
@@ -81,6 +87,8 @@ open-next-prerequisites: brew-check $(BREW_PACKAGES)
 	# and fail due to timeouts.
 	grep "^vips " $(BREW_PACKAGES) || $(BREW_BIN) install libvips
 	@printf "All open-next prerequisites are installed\n"
+
+endif # USE_OPEN_NEXT
 
 #$(info <--- .make/open-next.mk)
 
