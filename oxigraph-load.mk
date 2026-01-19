@@ -128,7 +128,7 @@ _oxigraph-http-load-files: $(ONTOLOGY_FILES_HTTP_LOADED_FLAGS) $(RDF_FILES_HTTP_
 # Automatically runs with -j10 for parallel loading
 # Requires server to be running (checks first)
 #
-OXIGRAPH_HTTP_LOAD_JOBS ?= 10
+OXIGRAPH_HTTP_LOAD_JOBS ?= 20
 
 .PHONY: oxigraph-http-load
 oxigraph-http-load: oxigraph-server-check
