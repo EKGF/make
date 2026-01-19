@@ -26,13 +26,13 @@ RDF_FILES_LOADED_FLAGS := $(TTL_FILES_LOADED_FLAGS) $(NT_FILES_LOADED_FLAGS)
 %.loaded.flag: %.ttl
 	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "Loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
-		ulimit -n 10240 && $(OXIGRAPH_BIN) load --location $(OXIGRAPH_LOCATION) --file $? --graph $${graph_name} 2>&1 | grep -v "If you plan to run a read-heavy workload"
+		ulimit -n 10240 && $(OXIGRAPH_BIN) load --location $(OXIGRAPH_LOCATION) --file $? --graph $${graph_name} 2>&1 | { grep -v "If you plan to run a read-heavy workload" || true; }
 	@touch $@
 
 %.loaded.flag: %.nt
 	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "Loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
-		ulimit -n 10240 && $(OXIGRAPH_BIN) load --location $(OXIGRAPH_LOCATION) --file $? --graph $${graph_name} 2>&1 | grep -v "If you plan to run a read-heavy workload"
+		ulimit -n 10240 && $(OXIGRAPH_BIN) load --location $(OXIGRAPH_LOCATION) --file $? --graph $${graph_name} 2>&1 | { grep -v "If you plan to run a read-heavy workload" || true; }
 	@touch $@
 
 #
