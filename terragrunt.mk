@@ -15,11 +15,13 @@ include $(MK_DIR)/sops.mk
 include $(MK_DIR)/terraform.mk
 include $(MK_DIR)/terragrunt-install.mk
 
+ifeq ($(USE_SOPS),1)
 ifndef SOPS_BIN
 $(warning SOPS_BIN is not set)
 endif
 ifndef SOPS_KEYS_FILE
 $(warning SOPS_KEYS_FILE is not set)
+endif
 endif
 
 .PHONY: terragrunt-init

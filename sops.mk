@@ -3,20 +3,12 @@ _MK_SOPS_MK_ := 1
 
 #$(info ---> .make/sops.mk)
 
-nosops ?=
-NO_SOPS ?=
-skip_sops_check ?=
-
-ifeq ($(NO_SOPS),1)
-nosops := 1
-skip_sops_check := 1
-endif
-
-ifeq ($(nosops),1)
-undefine SOPS_REQUIRED
-endif
-
-ifneq ($(skip_sops_check),1)
+#
+# SOPS support is disabled by default.
+# Set USE_SOPS=1 to enable SOPS functionality.
+# We are migrating to dotenvage for secrets management.
+#
+ifeq ($(USE_SOPS),1)
 
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
@@ -128,8 +120,6 @@ sops-install-via-choco:
 sops-upgrade-via-brew: _sops-log-if-upgrade-needed brew-check
 	$(BREW_BIN) upgrade sops
 
-endif # skip_sops_check
-
 #.INTERMEDIATE: $(TMP_DIR)/exec-with-sops.sh
 SOPS_GENERATE_EXEC_SCRIPT := 0
 ifdef SOPS_KEYS_FILE
@@ -169,6 +159,8 @@ ifeq ($(rubbish),1)
 $(error Could not generate $(SOPS_EXEC))
 endif
 endif
+
+endif # USE_SOPS
 
 #$(info <--- .make/sops.mk)
 

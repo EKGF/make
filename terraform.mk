@@ -33,11 +33,13 @@ include $(MK_DIR)/sops.mk
 include $(MK_DIR)/terraform-install.mk
 include $(MK_DIR)/tflint.mk
 
+ifeq ($(USE_SOPS),1)
 ifndef SOPS_BIN
 $(warning SOPS_BIN is not set)
 endif
 ifndef SOPS_KEYS_FILE
 $(warning SOPS_KEYS_FILE is not set)
+endif
 endif
 
 $(TF_DIR):
