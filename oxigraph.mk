@@ -82,6 +82,18 @@ $(OXIGRAPH_LOCATION):
 oxigraph-serve: $(OXIGRAPH_LOCATION) oxigraph-check
 	ulimit -n 10240 && $(OXIGRAPH_BIN) serve --location $(OXIGRAPH_LOCATION) --bind 0.0.0.0:$(OXIGRAPH_PORT)
 
+#
+# Optimize the OxiGraph database for read-heavy workloads.
+# This triggers RocksDB compaction. Usually not needed as the server
+# optimizes automatically in the background, but useful before serving
+# a read-only endpoint under heavy load.
+#
+.PHONY: oxigraph-optimize
+oxigraph-optimize: $(OXIGRAPH_LOCATION) oxigraph-check
+	@printf "$(bold)Optimizing OxiGraph database...$(normal)\n"
+	@ulimit -n 10240 && $(OXIGRAPH_BIN) optimize --location $(OXIGRAPH_LOCATION)
+	@printf "$(green)OxiGraph database optimized$(normal)\n"
+
 ifdef PKILL_BIN
 .PHONY: oxigraph-kill
 oxigraph-kill:
