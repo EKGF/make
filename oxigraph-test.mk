@@ -13,6 +13,8 @@ ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
 endif
 
+ifeq ($(USE_OXIGRAPH),1)
+
 include $(MK_DIR)/os.mk
 include $(MK_DIR)/jq.mk
 include $(MK_DIR)/oxigraph.mk
@@ -75,6 +77,8 @@ _oxigraph-run-tests-no-reload: oxigraph-test-clean oxigraph-report-tests
 
 .PHONY: oxigraph-run-tests
 oxigraph-run-tests: oxigraph-reload _oxigraph-run-tests-no-reload
+
+endif # USE_OXIGRAPH
 
 #$(info <--- .make/oxigraph-test.mk)
 

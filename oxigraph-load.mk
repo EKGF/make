@@ -13,6 +13,8 @@ ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
 endif
 
+ifeq ($(USE_OXIGRAPH),1)
+
 include $(MK_DIR)/oxigraph.mk
 include $(MK_DIR)/rdf-files.mk
 
@@ -64,6 +66,8 @@ oxigraph-graph-names: $(RDF_FILES)
 		graph_name="$$(echo $${file} | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
 		echo "$${graph_name}" ; \
 	done
+
+endif # USE_OXIGRAPH
 
 #$(info <--- .make/oxigraph-load.mk)
 

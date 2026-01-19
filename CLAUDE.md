@@ -83,6 +83,7 @@ Many tools are disabled by default and must be explicitly enabled via `USE_*=1` 
 
 | Variable | Enables | Dependencies |
 |----------|---------|--------------|
+| `USE_OXIGRAPH=1` | OxiGraph graph database | - |
 | `USE_SOPS=1` | SOPS secrets management | - |
 | `USE_TERRAFORM=1` | Terraform, TFLint | - |
 | `USE_TERRAGRUNT=1` | Terragrunt | `USE_TERRAFORM=1` |

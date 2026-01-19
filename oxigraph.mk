@@ -14,6 +14,12 @@ ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
 endif
 
+#
+# OxiGraph support is disabled by default.
+# Set USE_OXIGRAPH=1 to enable OxiGraph functionality.
+#
+ifeq ($(USE_OXIGRAPH),1)
+
 include $(MK_DIR)/os.mk
 include $(MK_DIR)/os-tools.mk
 include $(MK_DIR)/cargo.mk
@@ -135,6 +141,8 @@ oxigraph-clean-transform-serve: \
 	oxigraph-count-after-transform\
 	oxigraph-run-transforms \
 	oxigraph-serve
+
+endif # USE_OXIGRAPH
 
 #$(info <--- .make/oxigraph.mk)
 

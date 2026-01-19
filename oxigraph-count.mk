@@ -13,6 +13,8 @@ ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
 endif
 
+ifeq ($(USE_OXIGRAPH),1)
+
 include $(MK_DIR)/jq.mk
 include $(MK_DIR)/oxigraph.mk
 include $(MK_DIR)/oxigraph-load.mk
@@ -109,6 +111,8 @@ oxigraph-count-before-transform: _oxigraph-run-counts1-no-reload
 .PHONY: oxigraph-count-after-transform
 oxigraph-count-after-transform: _oxigraph-run-counts2-no-reload
 	printf "$(bold)$(green)Ran the counts after transformation$(normal)\n"
+
+endif # USE_OXIGRAPH
 
 #$(info <--- .make/oxigraph-count.mk)
 
