@@ -118,12 +118,21 @@ oxigraph-server-check:
 		     printf "$(yellow)Start it with: gmake oxigraph-serve$(normal)\n"; exit 1; }
 
 #
+# Internal target for HTTP loading files (called with parallelism)
+#
+.PHONY: _oxigraph-http-load-files
+_oxigraph-http-load-files: $(ONTOLOGY_FILES_HTTP_LOADED_FLAGS) $(RDF_FILES_HTTP_LOADED_FLAGS)
+
+#
 # HTTP load: loads to running server via HTTP (incremental, parallel-safe)
-# Use: make -j4 oxigraph-http-load
+# Automatically runs with -j10 for parallel loading
 # Requires server to be running (checks first)
 #
+OXIGRAPH_HTTP_LOAD_JOBS ?= 10
+
 .PHONY: oxigraph-http-load
-oxigraph-http-load: oxigraph-server-check $(ONTOLOGY_FILES_HTTP_LOADED_FLAGS) $(RDF_FILES_HTTP_LOADED_FLAGS)
+oxigraph-http-load: oxigraph-server-check
+	@$(MAKE) -j$(OXIGRAPH_HTTP_LOAD_JOBS) --no-print-directory _oxigraph-http-load-files
 	@printf "$(green)HTTP loaded all RDF files$(normal)\n"
 
 #
