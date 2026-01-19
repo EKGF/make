@@ -22,7 +22,7 @@ include $(MK_DIR)/oxigraph-count.mk
 include $(MK_DIR)/oxigraph-test.mk
 include $(MK_DIR)/oxigraph-transform.mk
 
-OXIGRAPH_SERVER_BIN_NAME := oxigraph_server
+OXIGRAPH_SERVER_BIN_NAME := oxigraph
 OXIGRAPH_BIN := $(call where-is-binary,$(OXIGRAPH_SERVER_BIN_NAME))
 OXIGRAPH_LOCATION_NAME := .oxigraph
 OXIGRAPH_LOCATION := $(shell mkdir -p $(GIT_ROOT)/$(OXIGRAPH_LOCATION_NAME) 2>/dev/null ; cd $(GIT_ROOT)/$(OXIGRAPH_LOCATION_NAME) ; pwd )
@@ -31,7 +31,7 @@ OXIGRAPH_PORT := 7879
 ifdef OXIGRAPH_BIN
 OXIGRAPH_VERSION := $(shell $(OXIGRAPH_BIN) --version | cut -d\  -f2)
 endif
-OXIGRAPH_VERSION_EXPECTED := 0.3.23
+OXIGRAPH_VERSION_EXPECTED := 0.5.3
 ifeq ($(OXIGRAPH_VERSION),$(OXIGRAPH_VERSION_EXPECTED))
 OXIGRAPH_CHECKED := 1
 else
@@ -46,7 +46,7 @@ oxigraph-check:
 	@#echo "Using OxiGraph $(OXIGRAPH_VERSION), storing its data in $(OXIGRAPH_LOCATION)"
 else
 oxigraph-check: cargo-check
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install oxigraph_server --version "^$(OXIGRAPH_VERSION_EXPECTED)"
+	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install oxigraph-cli --version "^$(OXIGRAPH_VERSION_EXPECTED)"
 endif
 else
 oxigraph-check:
@@ -56,7 +56,7 @@ endif
 
 #
 # Install OxiGraph by building it from source using the "cargo install" command which puts the binary executable
-# (oxigraph_server) in the Cargo bin directory (usually ~/.cargo/bin).
+# (oxigraph) in the Cargo bin directory (usually ~/.cargo/bin).
 #
 # This has the advantage that we can always use the latest and greatest version of OxiGraph (it's a moving target)
 # and that this script should easily run anywhere where Rust and Cargo are available. (inside Docker containers,
@@ -65,21 +65,22 @@ endif
 .PHONY: oxigraph-install
 oxigraph-install: oxigraph-clean os-tools-install cargo-check clang-check
 	@printf "$(bold)Installing OxiGraph:$(normal)\n"
-	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install oxigraph_server --version "^$(OXIGRAPH_VERSION_EXPECTED)"
+	$(CARGO_BIN) +$(RUSTUP_TOOLCHAIN) install oxigraph-cli --version "^$(OXIGRAPH_VERSION_EXPECTED)"
 
 .PHONY: oxigraph-help
 oxigraph-help: $(OXIGRAPH_LOCATION) oxigraph-check
-	$(OXIGRAPH_BIN) --location $(OXIGRAPH_LOCATION) help
+	$(OXIGRAPH_BIN) help
 
 $(OXIGRAPH_LOCATION):
 	set -x ; mkdir -p $@
 #
 # Launch the OxiGraph server, with whatever you have loaded into the database.
 # Usually http://localhost:7879 unless you override OXIGRAPH_PORT
+# Note: ulimit -n 10240 is required to avoid RocksDB TryFromIntError on macOS
 #
 .PHONY: oxigraph-serve
 oxigraph-serve: $(OXIGRAPH_LOCATION) oxigraph-check
-	$(OXIGRAPH_BIN) --location $(OXIGRAPH_LOCATION) serve --bind 0.0.0.0:$(OXIGRAPH_PORT)
+	ulimit -n 10240 && $(OXIGRAPH_BIN) serve --location $(OXIGRAPH_LOCATION) --bind 0.0.0.0:$(OXIGRAPH_PORT)
 
 ifdef PKILL_BIN
 .PHONY: oxigraph-kill

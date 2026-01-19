@@ -30,11 +30,11 @@ OXIGRAPH_COUNTS_REPORT2 := $(TEST_TMP)/report-counts-after-transformation.csv
 
 count%-before-transformation.tmp.csv: count%.rq
 	@file="$$(echo $? | sed 's@$(GIT_ROOT)/@@g')" ; printf "Counting: $(green)$${file}$(normal)\n"
-	@$(OXIGRAPH_BIN) --location $(OXIGRAPH_LOCATION) query --query-file $? --results-file $@
+	@ulimit -n 10240 && $(OXIGRAPH_BIN) query --location $(OXIGRAPH_LOCATION) --query-file $? --results-file $@
 
 count%-after-transformation.tmp.csv: count%.rq
 	@file="$$(echo $? | sed 's@$(GIT_ROOT)/@@g')" ; printf "Counting: $(green)$${file}$(normal)\n"
-	@$(OXIGRAPH_BIN) --location $(OXIGRAPH_LOCATION) query --query-file $? --results-file $@
+	@ulimit -n 10240 && $(OXIGRAPH_BIN) query --location $(OXIGRAPH_LOCATION) --query-file $? --results-file $@
 
 .PHONY: oxigraph-count-clean
 oxigraph-count-clean: _oxigraph-count1-clean _oxigraph-count2-clean

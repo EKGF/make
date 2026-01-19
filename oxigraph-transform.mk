@@ -29,7 +29,7 @@ OXIGRAPH_TRANSFORM_REPORT := $(TEST_TMP)/report-transforms.tmp.csv
 transform-%.tmp.csv: transform-%.rq
 	@rm -f $@ >/dev/null 2>&1 || true
 	@file="$$(echo $? | sed 's@$(GIT_ROOT)/@@g')" ; printf "Transforming: $(green)$${file}$(normal)\n"
-	@$(OXIGRAPH_BIN) --location $(OXIGRAPH_LOCATION) update --update-file $?
+	@ulimit -n 10240 && $(OXIGRAPH_BIN) update --location $(OXIGRAPH_LOCATION) --update-file $?
 	@touch $@
 
 .PHONY: oxigraph-transform-clean

@@ -24,22 +24,22 @@ RDF_FILES_LOADED_FLAGS := $(TTL_FILES_LOADED_FLAGS) $(NT_FILES_LOADED_FLAGS)
 %.loaded.flag: %.ttl
 	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "Loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
-		$(OXIGRAPH_BIN) --location $(OXIGRAPH_LOCATION) load --file $? --graph $${graph_name}
+		ulimit -n 10240 && $(OXIGRAPH_BIN) load --location $(OXIGRAPH_LOCATION) --file $? --graph $${graph_name}
 	@touch $@
 
 %.loaded.flag: %.nt
 	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "Loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
-		$(OXIGRAPH_BIN) --location $(OXIGRAPH_LOCATION) load --file $? --graph $${graph_name}
+		ulimit -n 10240 && $(OXIGRAPH_BIN) load --location $(OXIGRAPH_LOCATION) --file $? --graph $${graph_name}
 	@touch $@
 
 #
-# Dump all content of the OxiGraph database (stored in .oxigraph) to a temporart file called oxigraph-everything.trig
+# Dump all content of the OxiGraph database (stored in .oxigraph) to a temporary file called oxigraph-everything.trig
 # in TriG format
 #
 #.INTERMEDIATE: $(TMP_DIR)/oxigraph-everything.trig
 $(TMP_DIR)/oxigraph-everything.trig: oxigraph-check
-	@$(OXIGRAPH_BIN) --location $(OXIGRAPH_LOCATION) dump --format trig --file $@
+	@ulimit -n 10240 && $(OXIGRAPH_BIN) dump --location $(OXIGRAPH_LOCATION) --format trig --file $@
 
 #
 # Show all content of the OxiGraph database (stored in .oxigraph) to stdout in TriG format

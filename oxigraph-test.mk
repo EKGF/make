@@ -29,7 +29,7 @@ OXIGRAPH_TEST_REPORT := $(TEST_TMP)/report-tests.csv
 
 ask-%.tmp.csv: ask-%.rq
 	@file="$$(echo $? | sed 's@$(GIT_ROOT)/@@g')" ; printf "Test: $(green)$${file}$(normal)\n"
-	@$(OXIGRAPH_BIN) --location $(OXIGRAPH_LOCATION) query --query-file $? --results-file $@
+	@ulimit -n 10240 && $(OXIGRAPH_BIN) query --location $(OXIGRAPH_LOCATION) --query-file $? --results-file $@
 
 .PHONY: oxigraph-test-clean
 oxigraph-test-clean:
