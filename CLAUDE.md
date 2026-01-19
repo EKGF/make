@@ -77,6 +77,20 @@ endif # _MK_EXAMPLE_MK_
 - **Build tools**: `cargo*.mk`, `nodejs*.mk`, `python*.mk`, `docker.mk`
 - **Semantic/RDF**: `oxigraph*.mk`, `rdf-files.mk`, `story-sparql-files.mk`
 
+## Opt-in Tools
+
+Many tools are disabled by default and must be explicitly enabled via `USE_*=1` variables in your project's Makefile:
+
+| Variable | Enables | Dependencies |
+|----------|---------|--------------|
+| `USE_SOPS=1` | SOPS secrets management | - |
+| `USE_TERRAFORM=1` | Terraform, TFLint | - |
+| `USE_TERRAGRUNT=1` | Terragrunt | `USE_TERRAFORM=1` |
+| `USE_RDFOX=1` | RDFox graph database | - |
+| `USE_OPEN_NEXT=1` | OpenNext deployment | - |
+
+Dependencies are enforced with errors (e.g., `USE_TERRAGRUNT=1` without `USE_TERRAFORM=1` will fail).
+
 ## Conventions
 
 - SPARQL files use `.rq` extension (not `.sparql`)
