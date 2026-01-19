@@ -113,7 +113,7 @@ oxigraph-bulk-load: oxigraph-kill $(ONTOLOGY_FILES_BULK_LOADED_FLAGS) $(RDF_FILE
 #
 .PHONY: oxigraph-server-check
 oxigraph-server-check:
-	@$(CURL_BIN) -sf "$(OXIGRAPH_ENDPOINT)/query?query=ASK{?s?p?o}" >/dev/null 2>&1 \
+	@$(CURL_BIN) -sf "$(OXIGRAPH_ENDPOINT)/" >/dev/null 2>&1 \
 		|| { printf "$(red)ERROR: OxiGraph server is not running at $(OXIGRAPH_ENDPOINT)$(normal)\n"; \
 		     printf "$(yellow)Start it with: gmake oxigraph-serve$(normal)\n"; exit 1; }
 
