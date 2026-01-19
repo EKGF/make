@@ -1,6 +1,10 @@
 #
 # Load all the RDF files in this repo into OxiGraph
 #
+# Two loading strategies:
+# - bulk-load: Kills server, loads directly via CLI (faster for initial/full loads)
+# - http-load: Loads via HTTP to running server (for incremental updates, supports parallel)
+#
 ifndef _MK_OXIGRAPH_LOAD_MK_
 _MK_OXIGRAPH_LOAD_MK_ := 1
 
@@ -17,22 +21,56 @@ ifeq ($(USE_OXIGRAPH),1)
 
 include $(MK_DIR)/oxigraph.mk
 include $(MK_DIR)/rdf-files.mk
+include $(MK_DIR)/curl.mk
 
-ONTOLOGY_FILES_LOADED_FLAGS := $(ONTOLOGY_FILES:.ttl=.loaded.flag)
-TTL_FILES_LOADED_FLAGS := $(RDF_TTL_FILES:.ttl=.loaded.flag)
-NT_FILES_LOADED_FLAGS := $(RDF_NT_FILES:.nt=.loaded.flag)
-RDF_FILES_LOADED_FLAGS := $(TTL_FILES_LOADED_FLAGS) $(NT_FILES_LOADED_FLAGS)
+OXIGRAPH_ENDPOINT := http://localhost:$(OXIGRAPH_PORT)
 
-%.loaded.flag: %.ttl
-	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "Loading RDF File $(green)$${file}$(normal)\n"
+# Bulk load flags (CLI-based, requires server to be stopped)
+ONTOLOGY_FILES_BULK_LOADED_FLAGS := $(ONTOLOGY_FILES:.ttl=.bulk-loaded.flag)
+TTL_FILES_BULK_LOADED_FLAGS := $(RDF_TTL_FILES:.ttl=.bulk-loaded.flag)
+NT_FILES_BULK_LOADED_FLAGS := $(RDF_NT_FILES:.nt=.bulk-loaded.flag)
+RDF_FILES_BULK_LOADED_FLAGS := $(TTL_FILES_BULK_LOADED_FLAGS) $(NT_FILES_BULK_LOADED_FLAGS)
+
+# HTTP load flags (HTTP-based, server must be running, supports parallel)
+ONTOLOGY_FILES_HTTP_LOADED_FLAGS := $(ONTOLOGY_FILES:.ttl=.http-loaded.flag)
+TTL_FILES_HTTP_LOADED_FLAGS := $(RDF_TTL_FILES:.ttl=.http-loaded.flag)
+NT_FILES_HTTP_LOADED_FLAGS := $(RDF_NT_FILES:.nt=.http-loaded.flag)
+RDF_FILES_HTTP_LOADED_FLAGS := $(TTL_FILES_HTTP_LOADED_FLAGS) $(NT_FILES_HTTP_LOADED_FLAGS)
+
+#
+# Bulk load rules - load directly to database files via CLI
+# Server must be stopped (oxigraph-kill is a dependency)
+#
+%.bulk-loaded.flag: %.ttl
+	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "Bulk loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
 		ulimit -n 10240 && $(OXIGRAPH_BIN) load --location $(OXIGRAPH_LOCATION) --file $? --graph $${graph_name} 2>&1 | { grep -v "If you plan to run a read-heavy workload" || true; }
 	@touch $@
 
-%.loaded.flag: %.nt
-	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "Loading RDF File $(green)$${file}$(normal)\n"
+%.bulk-loaded.flag: %.nt
+	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "Bulk loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
 		ulimit -n 10240 && $(OXIGRAPH_BIN) load --location $(OXIGRAPH_LOCATION) --file $? --graph $${graph_name} 2>&1 | { grep -v "If you plan to run a read-heavy workload" || true; }
+	@touch $@
+
+#
+# HTTP load rules - load via HTTP POST to running server
+# Supports parallel execution (use make -j)
+#
+%.http-loaded.flag: %.ttl
+	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
+	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
+		$(CURL_BIN) -s -X POST -H "Content-Type: text/turtle" \
+			--data-binary @$? \
+			"$(OXIGRAPH_ENDPOINT)/store?graph=$${graph_name}"
+	@touch $@
+
+%.http-loaded.flag: %.nt
+	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
+	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
+		$(CURL_BIN) -s -X POST -H "Content-Type: application/n-triples" \
+			--data-binary @$? \
+			"$(OXIGRAPH_ENDPOINT)/store?graph=$${graph_name}"
 	@touch $@
 
 #
@@ -50,16 +88,43 @@ $(TMP_DIR)/oxigraph-everything.trig: oxigraph-check
 oxigraph-dump-trig: $(TMP_DIR)/oxigraph-everything.trig
 	@cat -n $?
 
-.PHONY: oxigraph-load-flags-delete
-oxigraph-load-flags-delete:
-	@rm -f $(ONTOLOGY_FILES_LOADED_FLAGS) $(TTL_FILES_LOADED_FLAGS) $(NT_FILES_LOADED_FLAGS) >/dev/null 2>&1 || true
+.PHONY: oxigraph-bulk-load-flags-delete
+oxigraph-bulk-load-flags-delete:
+	@rm -f $(ONTOLOGY_FILES_BULK_LOADED_FLAGS) $(TTL_FILES_BULK_LOADED_FLAGS) $(NT_FILES_BULK_LOADED_FLAGS) >/dev/null 2>&1 || true
 
+.PHONY: oxigraph-http-load-flags-delete
+oxigraph-http-load-flags-delete:
+	@rm -f $(ONTOLOGY_FILES_HTTP_LOADED_FLAGS) $(TTL_FILES_HTTP_LOADED_FLAGS) $(NT_FILES_HTTP_LOADED_FLAGS) >/dev/null 2>&1 || true
+
+.PHONY: oxigraph-load-flags-delete
+oxigraph-load-flags-delete: oxigraph-bulk-load-flags-delete oxigraph-http-load-flags-delete
+
+#
+# Bulk load: kills server first, loads via CLI (fast, sequential)
+#
+.PHONY: oxigraph-bulk-load
+oxigraph-bulk-load: oxigraph-kill $(ONTOLOGY_FILES_BULK_LOADED_FLAGS) $(RDF_FILES_BULK_LOADED_FLAGS)
+	@printf "$(green)Bulk loaded all RDF files$(normal)\n"
+
+#
+# HTTP load: loads to running server via HTTP (incremental, parallel-safe)
+# Use: make -j4 oxigraph-http-load
+#
+.PHONY: oxigraph-http-load
+oxigraph-http-load: $(ONTOLOGY_FILES_HTTP_LOADED_FLAGS) $(RDF_FILES_HTTP_LOADED_FLAGS)
+	@printf "$(green)HTTP loaded all RDF files$(normal)\n"
+
+#
+# Convenience aliases
+#
 .PHONY: oxigraph-load
-oxigraph-load: oxigraph-kill $(ONTOLOGY_FILES_LOADED_FLAGS) $(RDF_FILES_LOADED_FLAGS)
+oxigraph-load: oxigraph-bulk-load
 
 .PHONY: oxigraph-reload
-oxigraph-reload: oxigraph-load-flags-delete oxigraph-load
-	@echo "(Re)loaded all RDF files"
+oxigraph-reload: oxigraph-bulk-load-flags-delete oxigraph-bulk-load
+
+.PHONY: oxigraph-http-reload
+oxigraph-http-reload: oxigraph-http-load-flags-delete oxigraph-http-load
 
 oxigraph-graph-names: $(RDF_FILES)
 	@for file in $? ; do \
