@@ -60,17 +60,19 @@ RDF_FILES_HTTP_LOADED_FLAGS := $(TTL_FILES_HTTP_LOADED_FLAGS) $(NT_FILES_HTTP_LO
 %.http-loaded.flag: %.ttl
 	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
-		$(CURL_BIN) -s -X POST -H "Content-Type: text/turtle" \
+		$(CURL_BIN) -sf -X POST -H "Content-Type: text/turtle" \
 			--data-binary @$? \
-			"$(OXIGRAPH_ENDPOINT)/store?graph=$${graph_name}"
+			"$(OXIGRAPH_ENDPOINT)/store?graph=$${graph_name}" \
+		|| { printf "$(red)ERROR: Failed to load $${file}. Is OxiGraph running? Try: gmake oxigraph-serve$(normal)\n" >&2; exit 1; }
 	@touch $@
 
 %.http-loaded.flag: %.nt
 	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
-		$(CURL_BIN) -s -X POST -H "Content-Type: application/n-triples" \
+		$(CURL_BIN) -sf -X POST -H "Content-Type: application/n-triples" \
 			--data-binary @$? \
-			"$(OXIGRAPH_ENDPOINT)/store?graph=$${graph_name}"
+			"$(OXIGRAPH_ENDPOINT)/store?graph=$${graph_name}" \
+		|| { printf "$(red)ERROR: Failed to load $${file}. Is OxiGraph running? Try: gmake oxigraph-serve$(normal)\n" >&2; exit 1; }
 	@touch $@
 
 #
@@ -107,11 +109,21 @@ oxigraph-bulk-load: oxigraph-kill $(ONTOLOGY_FILES_BULK_LOADED_FLAGS) $(RDF_FILE
 	@printf "$(green)Bulk loaded all RDF files$(normal)\n"
 
 #
+# Check if OxiGraph server is running
+#
+.PHONY: oxigraph-server-check
+oxigraph-server-check:
+	@$(CURL_BIN) -sf "$(OXIGRAPH_ENDPOINT)/query?query=ASK{?s?p?o}" >/dev/null 2>&1 \
+		|| { printf "$(red)ERROR: OxiGraph server is not running at $(OXIGRAPH_ENDPOINT)$(normal)\n"; \
+		     printf "$(yellow)Start it with: gmake oxigraph-serve$(normal)\n"; exit 1; }
+
+#
 # HTTP load: loads to running server via HTTP (incremental, parallel-safe)
 # Use: make -j4 oxigraph-http-load
+# Requires server to be running (checks first)
 #
 .PHONY: oxigraph-http-load
-oxigraph-http-load: $(ONTOLOGY_FILES_HTTP_LOADED_FLAGS) $(RDF_FILES_HTTP_LOADED_FLAGS)
+oxigraph-http-load: oxigraph-server-check $(ONTOLOGY_FILES_HTTP_LOADED_FLAGS) $(RDF_FILES_HTTP_LOADED_FLAGS)
 	@printf "$(green)HTTP loaded all RDF files$(normal)\n"
 
 #

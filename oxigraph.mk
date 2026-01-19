@@ -20,6 +20,10 @@ endif
 #
 ifeq ($(USE_OXIGRAPH),1)
 
+# Define OXIGRAPH_PORT early - it's needed by oxigraph-load.mk which may be
+# included indirectly via oxigraph-count.mk before we finish this file
+OXIGRAPH_PORT ?= 7879
+
 include $(MK_DIR)/os.mk
 include $(MK_DIR)/os-tools.mk
 include $(MK_DIR)/cargo.mk
@@ -32,7 +36,6 @@ OXIGRAPH_SERVER_BIN_NAME := oxigraph
 OXIGRAPH_BIN := $(call where-is-binary,$(OXIGRAPH_SERVER_BIN_NAME))
 OXIGRAPH_LOCATION_NAME := .oxigraph
 OXIGRAPH_LOCATION := $(shell mkdir -p $(GIT_ROOT)/$(OXIGRAPH_LOCATION_NAME) 2>/dev/null ; cd $(GIT_ROOT)/$(OXIGRAPH_LOCATION_NAME) ; pwd )
-OXIGRAPH_PORT := 7879
 
 ifdef OXIGRAPH_BIN
 OXIGRAPH_VERSION := $(shell $(OXIGRAPH_BIN) --version | cut -d\  -f2)
