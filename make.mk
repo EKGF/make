@@ -3,6 +3,30 @@ _MK_MAKE_MK_ := 1
 
 #$(info ---> .make/make.mk)
 
+# ============================================================================
+# GNU Make version check - MUST be before any includes
+# On macOS, if using system make (3.x), automatically re-launch with gmake
+# ============================================================================
+ifeq ($(filter 4.%,$(MAKE_VERSION)),)
+  ifeq ($(shell uname -s 2>/dev/null),Darwin)
+    _GMAKE_BIN := $(shell command -v gmake 2>/dev/null)
+    ifdef _GMAKE_BIN
+      $(info Detected make $(MAKE_VERSION) on macOS, re-launching with gmake...)
+      # Use exec to replace this process with gmake
+      # The - prefix ignores errors, .PHONY ensures it runs
+      .PHONY: __gmake_relaunch
+      __gmake_relaunch: ; @exec $(_GMAKE_BIN) $(MAKECMDGOALS)
+      # Catch-all pattern rule for any target - delegates to gmake
+      %: __gmake_relaunch ; @:
+      # Make the relaunch the default when no target specified
+      .DEFAULT_GOAL := __gmake_relaunch
+    else
+      $(error GNU Make 4.x is required on macOS. Install with: brew install make)
+    endif
+  endif
+endif
+# ============================================================================
+
 ifndef GIT_ROOT
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 endif
@@ -37,12 +61,12 @@ endif
 
 MAKE_BIN := $(strip $(MAKE_BIN))
 
-IS_MAKE_3 := $(shell $(MAKE) --version 2>/dev/null | head -n1 | grep -q 'GNU Make 3' && echo 1 || echo 0)
-ifeq ($(IS_MAKE_3),1)
+# Version flags (early delegation handles macOS Make 3.x case)
+ifeq ($(filter 4.%,$(MAKE_VERSION)),)
+IS_MAKE_3 := 1
 IS_MAKE_4 := 0
-$(warning You're using GNU Make version $(MAKE_VERSION), you should use version 4, try the gmake command)
 else
-undefine IS_MAKE_3
+IS_MAKE_3 := 0
 IS_MAKE_4 := 1
 endif
 
