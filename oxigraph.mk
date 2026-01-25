@@ -106,6 +106,12 @@ oxigraph-optimize: $(OXIGRAPH_LOCATION) oxigraph-check
 ifdef PKILL_BIN
 .PHONY: oxigraph-kill
 oxigraph-kill:
+	@echo "oxigraph-kill called at $$(date)" >> /tmp/oxigraph-kills.log
+	@echo "  Parent PID: $$PPID" >> /tmp/oxigraph-kills.log
+	@ps -p $$PPID -o args= >> /tmp/oxigraph-kills.log 2>/dev/null || echo "  (parent process info unavailable)" >> /tmp/oxigraph-kills.log
+	@echo "  Call stack:" >> /tmp/oxigraph-kills.log
+	@ps -o ppid= -p $$PPID 2>/dev/null | xargs -I{} ps -p {} -o args= >> /tmp/oxigraph-kills.log 2>/dev/null || true
+	@echo "---" >> /tmp/oxigraph-kills.log
 	@-$(PKILL_BIN) $(OXIGRAPH_SERVER_BIN_NAME)
 else
 oxigraph-kill:
