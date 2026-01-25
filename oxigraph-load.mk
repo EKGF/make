@@ -60,7 +60,7 @@ RDF_FILES_HTTP_LOADED_FLAGS := $(TTL_FILES_HTTP_LOADED_FLAGS) $(NT_FILES_HTTP_LO
 %.http-loaded.flag: %.ttl
 	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
-		$(CURL_BIN) -sf -X POST -H "Content-Type: text/turtle" \
+		$(CURL_BIN) -sf -X PUT -H "Content-Type: text/turtle" \
 			--data-binary @$? \
 			"$(OXIGRAPH_ENDPOINT)/store?graph=$${graph_name}" \
 		|| { printf "$(red)ERROR: Failed to load $${file}. Is OxiGraph running? Try: gmake oxigraph-serve$(normal)\n" >&2; exit 1; }
@@ -69,7 +69,7 @@ RDF_FILES_HTTP_LOADED_FLAGS := $(TTL_FILES_HTTP_LOADED_FLAGS) $(NT_FILES_HTTP_LO
 %.http-loaded.flag: %.nt
 	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
-		$(CURL_BIN) -sf -X POST -H "Content-Type: application/n-triples" \
+		$(CURL_BIN) -sf -X PUT -H "Content-Type: application/n-triples" \
 			--data-binary @$? \
 			"$(OXIGRAPH_ENDPOINT)/store?graph=$${graph_name}" \
 		|| { printf "$(red)ERROR: Failed to load $${file}. Is OxiGraph running? Try: gmake oxigraph-serve$(normal)\n" >&2; exit 1; }
@@ -134,6 +134,33 @@ OXIGRAPH_HTTP_LOAD_JOBS ?= 20
 oxigraph-http-load: oxigraph-server-check
 	@$(MAKE) -j$(OXIGRAPH_HTTP_LOAD_JOBS) --no-print-directory _oxigraph-http-load-files
 	@printf "$(green)HTTP loaded all RDF files$(normal)\n"
+	@$(MAKE) --no-print-directory _oxigraph-http-load-sparql-queries
+
+#
+# Load SPARQL query files (.rq) into the knowledge graph
+# For each .rq file, finds the corresponding story.ttl and inserts the query
+# content as sparql-story:sparql property
+#
+.PHONY: _oxigraph-http-load-sparql-queries
+_oxigraph-http-load-sparql-queries:
+	@find $(GIT_ROOT)/use-case -name "*.rq" -type f 2>/dev/null | while read rq_file; do \
+		story_dir="$$(dirname "$$rq_file")" ; \
+		story_ttl="$$story_dir/story.ttl" ; \
+		if [ -f "$$story_ttl" ]; then \
+			rq_filename="$$(basename "$$rq_file")" ; \
+			rel_story="$$(echo "$$story_ttl" | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" ; \
+			graph_name="file:///$$rel_story" ; \
+			rel_rq="$$(echo "$$rq_file" | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" ; \
+			printf "HTTP loading SPARQL query $(green)$$rel_rq$(normal)\n" ; \
+			query_content="$$(cat "$$rq_file" | $(SED_BIN) 's/\\/\\\\/g' | $(SED_BIN) 's/"/\\"/g' | tr '\n' '\r' | $(SED_BIN) 's/\r/\\n/g')" ; \
+			sparql_update="PREFIX sparql-story: <https://ekgf.org/ontology/story-impl-sparql#> DELETE { GRAPH <$$graph_name> { ?impl sparql-story:sparql ?oldSparql . } } INSERT { GRAPH <$$graph_name> { ?impl sparql-story:sparql \"\"\"$$query_content\"\"\" . } } WHERE { GRAPH <$$graph_name> { ?impl sparql-story:fileName \"$$rq_filename\" . OPTIONAL { ?impl sparql-story:sparql ?oldSparql . } } }" ; \
+			$(CURL_BIN) -sf -X POST -H "Content-Type: application/sparql-update" \
+				--data-binary "$$sparql_update" \
+				"$(OXIGRAPH_ENDPOINT)/update" \
+			|| { printf "$(red)ERROR: Failed to load SPARQL query $$rel_rq$(normal)\n" >&2; } ; \
+		fi ; \
+	done
+	@printf "$(green)HTTP loaded all SPARQL query files$(normal)\n"
 
 #
 # Convenience aliases
