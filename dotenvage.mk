@@ -28,7 +28,7 @@ ifdef DOTENVAGE_BIN
 DOTENVAGE_VERSION := $(shell $(DOTENVAGE_BIN) --version 2>/dev/null | cut -d\  -f2)
 endif
 
-DOTENVAGE_VERSION_EXPECTED ?= 0.1.11
+DOTENVAGE_VERSION_EXPECTED ?= 0.2.1
 
 ifeq ($(DOTENVAGE_VERSION),$(DOTENVAGE_VERSION_EXPECTED))
 DOTENVAGE_CHECKED := 1
@@ -91,6 +91,23 @@ dotenvage-install-binstall: cargo-check cargo-install-binstall
 dotenvage-install-npm:
 	@printf "$(bold)Installing dotenvage via npm:$(normal)\n"
 	npm install -g dotenvage
+
+#
+# Load environment variables from .env files via dotenvage.
+# Uses NODE_ENV to determine which file to load:
+#   - NODE_ENV unset/development: .env, .env.local
+#   - NODE_ENV=production: .env.production
+#   - NODE_ENV=preview: .env.preview
+#
+# This enables the same Makefile targets to work locally and in CI
+# by simply setting NODE_ENV appropriately.
+#
+ifdef DOTENVAGE_BIN
+ifeq ($(DOTENVAGE_CHECKED),1)
+# Load all environment variables from dotenvage into Make variables
+$(eval $(shell $(DOTENVAGE_BIN) dump --make-eval 2>/dev/null))
+endif
+endif
 
 #
 # Install cargo-binstall if not already installed.

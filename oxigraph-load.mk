@@ -23,7 +23,14 @@ include $(MK_DIR)/oxigraph.mk
 include $(MK_DIR)/rdf-files.mk
 include $(MK_DIR)/curl.mk
 
-OXIGRAPH_ENDPOINT := http://localhost:$(OXIGRAPH_PORT)
+# SPARQL endpoints - loaded from dotenvage (.env files) or can be overridden.
+# These support any SPARQL 1.1 compliant triplestore (Oxigraph, GraphDB, etc.)
+# Set NODE_ENV=production to load production endpoints from .env.production
+EKG_SPARQL_HEALTH_ENDPOINT ?= http://localhost:$(OXIGRAPH_PORT)/
+EKG_SPARQL_QUERY_ENDPOINT ?= http://localhost:$(OXIGRAPH_PORT)/query
+EKG_SPARQL_UPDATE_ENDPOINT ?= http://localhost:$(OXIGRAPH_PORT)/update
+# Store endpoint derived from health endpoint (strip trailing slash, add /store)
+EKG_SPARQL_STORE_ENDPOINT ?= $(patsubst %/,%,$(EKG_SPARQL_HEALTH_ENDPOINT))/store
 
 # Bulk load flags (CLI-based, requires server to be stopped)
 ONTOLOGY_FILES_BULK_LOADED_FLAGS := $(ONTOLOGY_FILES:.ttl=.bulk-loaded.flag)
@@ -62,8 +69,8 @@ RDF_FILES_HTTP_LOADED_FLAGS := $(TTL_FILES_HTTP_LOADED_FLAGS) $(NT_FILES_HTTP_LO
 	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
 		$(CURL_BIN) -sf -X PUT -H "Content-Type: text/turtle" \
 			--data-binary @$? \
-			"$(OXIGRAPH_ENDPOINT)/store?graph=$${graph_name}" \
-		|| { printf "$(red)ERROR: Failed to load $${file}. Is OxiGraph running? Try: gmake oxigraph-serve$(normal)\n" >&2; exit 1; }
+			"$(EKG_SPARQL_STORE_ENDPOINT)?graph=$${graph_name}" \
+		|| { printf "$(red)ERROR: Failed to load $${file}. Is the SPARQL server running at $(EKG_SPARQL_HEALTH_ENDPOINT)?$(normal)\n" >&2; exit 1; }
 	@touch $@
 
 %.http-loaded.flag: %.nt
@@ -71,8 +78,8 @@ RDF_FILES_HTTP_LOADED_FLAGS := $(TTL_FILES_HTTP_LOADED_FLAGS) $(NT_FILES_HTTP_LO
 	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
 		$(CURL_BIN) -sf -X PUT -H "Content-Type: application/n-triples" \
 			--data-binary @$? \
-			"$(OXIGRAPH_ENDPOINT)/store?graph=$${graph_name}" \
-		|| { printf "$(red)ERROR: Failed to load $${file}. Is OxiGraph running? Try: gmake oxigraph-serve$(normal)\n" >&2; exit 1; }
+			"$(EKG_SPARQL_STORE_ENDPOINT)?graph=$${graph_name}" \
+		|| { printf "$(red)ERROR: Failed to load $${file}. Is the SPARQL server running at $(EKG_SPARQL_HEALTH_ENDPOINT)?$(normal)\n" >&2; exit 1; }
 	@touch $@
 
 #
@@ -113,8 +120,8 @@ oxigraph-bulk-load: oxigraph-kill $(ONTOLOGY_FILES_BULK_LOADED_FLAGS) $(RDF_FILE
 #
 .PHONY: oxigraph-server-check
 oxigraph-server-check:
-	@$(CURL_BIN) -sf "$(OXIGRAPH_ENDPOINT)/" >/dev/null 2>&1 \
-		|| { printf "$(red)ERROR: OxiGraph server is not running at $(OXIGRAPH_ENDPOINT)$(normal)\n"; \
+	@$(CURL_BIN) -sf "$(EKG_SPARQL_HEALTH_ENDPOINT)" >/dev/null 2>&1 \
+		|| { printf "$(red)ERROR: SPARQL server is not running at $(EKG_SPARQL_HEALTH_ENDPOINT)$(normal)\n"; \
 		     printf "$(yellow)Start it with: gmake oxigraph-serve$(normal)\n"; exit 1; }
 
 #
@@ -156,7 +163,7 @@ _oxigraph-http-load-sparql-queries:
 			sparql_update="PREFIX sparql-story: <https://ekgf.org/ontology/story-impl-sparql#> DELETE { GRAPH <$$graph_name> { ?impl sparql-story:sparql ?oldSparql . } } INSERT { GRAPH <$$graph_name> { ?impl sparql-story:sparql \"\"\"$$query_content\"\"\" . } } WHERE { GRAPH <$$graph_name> { ?impl sparql-story:fileName \"$$rq_filename\" . OPTIONAL { ?impl sparql-story:sparql ?oldSparql . } } }" ; \
 			$(CURL_BIN) -sf -X POST -H "Content-Type: application/sparql-update" \
 				--data-binary "$$sparql_update" \
-				"$(OXIGRAPH_ENDPOINT)/update" \
+				"$(EKG_SPARQL_UPDATE_ENDPOINT)" \
 			|| { printf "$(red)ERROR: Failed to load SPARQL query $$rel_rq$(normal)\n" >&2; } ; \
 		fi ; \
 	done
