@@ -17,6 +17,8 @@ export HOMEBREW_AUTO_UPDATE_SECS := 86400
 
 BREW_BIN := $(call where-is-binary,brew)
 ifndef BREW_BIN
+# Only require Homebrew on macOS - Linux CI runners don't need it
+ifeq ($(UNAME_S_lc),darwin)
 ifeq (,$(filter brew-install,$(MAKECMDGOALS)))
 $(error Homebrew not found, run "$(MAKE) brew-install" to install)
 else
@@ -25,6 +27,7 @@ skip_rustup_check := 1
 skip_cargo_check := 1
 skip_llvm_check := 1
 skip_sops_check := 1
+endif
 endif
 endif
 
