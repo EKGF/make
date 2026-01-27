@@ -63,6 +63,7 @@ FLY_MOUNT_DEST ?= /data
 FLY_PROCESS_CMD ?= serve --location /data --bind 0.0.0.0:7878
 FLY_ENV_VARS ?= RUST_LOG = "info"
 FLY_BUILD_ARGS_TOML ?=
+FLY_HEALTH_GRACE_PERIOD ?= 10s
 endif
 
 ifeq ($(EKG_VARIANT),graphdb)
@@ -78,6 +79,8 @@ FLY_ENV_VARS ?= GDB_HEAP_SIZE = "1g"
 # Build args: TOML format for fly.toml, CLI format for --build-arg
 FLY_BUILD_ARGS_TOML_TOML ?= EKG_ENV = "$(EKG_ENV)"
 FLY_BUILD_ARGS_TOML_CLI ?= EKG_ENV=$(EKG_ENV)
+# GraphDB takes ~40s to start, need longer grace period
+FLY_HEALTH_GRACE_PERIOD ?= 60s
 endif
 
 # fly.toml output path
@@ -168,7 +171,7 @@ endif
 		'[[http_service.checks]]' \
 		'interval = "15s"' \
 		'timeout = "5s"' \
-		'grace_period = "10s"' \
+		'grace_period = "$(FLY_HEALTH_GRACE_PERIOD)"' \
 		'method = "GET"' \
 		'path = "/"' \
 		'' \
