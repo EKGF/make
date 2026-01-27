@@ -103,10 +103,9 @@ dotenvage-install-npm:
 # by simply setting NODE_ENV appropriately.
 #
 ifdef DOTENVAGE_BIN
-ifeq ($(DOTENVAGE_CHECKED),1)
 # Load all environment variables from dotenvage into Make variables
+# (load regardless of version - version mismatch is just a warning)
 $(eval $(shell $(DOTENVAGE_BIN) dump --make-eval 2>/dev/null))
-endif
 endif
 
 #
