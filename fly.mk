@@ -62,7 +62,7 @@ FLY_VOLUME_SIZE ?= $(_FLY_DEFAULT_VOLUME_SIZE)
 FLY_MOUNT_DEST ?= /data
 FLY_PROCESS_CMD ?= serve --location /data --bind 0.0.0.0:7878
 FLY_ENV_VARS ?= RUST_LOG = "info"
-FLY_BUILD_ARGS ?=
+FLY_BUILD_ARGS_TOML ?=
 endif
 
 ifeq ($(EKG_VARIANT),graphdb)
@@ -75,7 +75,9 @@ FLY_VOLUME_SIZE ?= $(_FLY_DEFAULT_VOLUME_SIZE)
 FLY_MOUNT_DEST ?= /opt/graphdb/data
 FLY_PROCESS_CMD ?=
 FLY_ENV_VARS ?= GDB_HEAP_SIZE = "1g"
-FLY_BUILD_ARGS ?= EKG_ENV = "$(EKG_ENV)"
+# Build args: TOML format for fly.toml, CLI format for --build-arg
+FLY_BUILD_ARGS_TOML_TOML ?= EKG_ENV = "$(EKG_ENV)"
+FLY_BUILD_ARGS_TOML_CLI ?= EKG_ENV=$(EKG_ENV)
 endif
 
 # fly.toml output path
@@ -125,11 +127,11 @@ endif
 		'[build]' \
 		'dockerfile = "$(FLY_DOCKERFILE)"' \
 		'' > $(FLY_TOML)
-	@if [ -n "$(FLY_BUILD_ARGS)" ]; then \
+	@if [ -n "$(FLY_BUILD_ARGS_TOML)" ]; then \
 		printf '%s\n' \
 			'' \
 			'[build.args]' \
-			'$(FLY_BUILD_ARGS)' \
+			'$(FLY_BUILD_ARGS_TOML)' \
 			'' >> $(FLY_TOML); \
 	fi
 	@printf '%s\n' \
@@ -201,8 +203,8 @@ endif
 		echo "$(EKG_AGE_KEY)" | $(FLYCTL_BIN) secrets set EKG_AGE_KEY=- -a $(FLY_APP_NAME); \
 	fi
 	# Deploy with build args if specified
-	@if [ -n "$(FLY_BUILD_ARGS)" ]; then \
-		$(FLYCTL_BIN) deploy --remote-only --app $(FLY_APP_NAME) --build-arg $(FLY_BUILD_ARGS); \
+	@if [ -n "$(FLY_BUILD_ARGS_CLI)" ]; then \
+		$(FLYCTL_BIN) deploy --remote-only --app $(FLY_APP_NAME) --build-arg $(FLY_BUILD_ARGS_CLI); \
 	else \
 		$(FLYCTL_BIN) deploy --remote-only --app $(FLY_APP_NAME); \
 	fi
