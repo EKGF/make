@@ -64,6 +64,7 @@ FLY_PROCESS_CMD ?= serve --location /data --bind 0.0.0.0:7878
 FLY_ENV_VARS ?= RUST_LOG = "info"
 FLY_BUILD_ARGS_TOML ?=
 FLY_HEALTH_GRACE_PERIOD ?= 10s
+FLY_HEALTH_PATH ?= /
 endif
 
 ifeq ($(EKG_VARIANT),graphdb)
@@ -81,6 +82,8 @@ FLY_BUILD_ARGS_TOML_TOML ?= EKG_ENV = "$(EKG_ENV)"
 FLY_BUILD_ARGS_TOML_CLI ?= EKG_ENV=$(EKG_ENV)
 # GraphDB takes ~40s to start, need longer grace period
 FLY_HEALTH_GRACE_PERIOD ?= 60s
+# GraphDB returns 406 on /, use REST API endpoint instead
+FLY_HEALTH_PATH ?= /rest/repositories
 endif
 
 # fly.toml output path
@@ -173,7 +176,7 @@ endif
 		'timeout = "5s"' \
 		'grace_period = "$(FLY_HEALTH_GRACE_PERIOD)"' \
 		'method = "GET"' \
-		'path = "/"' \
+		'path = "$(FLY_HEALTH_PATH)"' \
 		'' \
 		'[[vm]]' \
 		'memory = "$(FLY_MEMORY)"' \
