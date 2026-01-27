@@ -32,7 +32,10 @@ HTTP_LOAD_FLAG_SUFFIX := .http-loaded.$(EKG_VARIANT).$(EKG_ENV).flag
 ONTOLOGY_FILES_HTTP_LOADED_FLAGS := $(ONTOLOGY_FILES:.ttl=$(HTTP_LOAD_FLAG_SUFFIX))
 TTL_FILES_HTTP_LOADED_FLAGS := $(RDF_TTL_FILES:.ttl=$(HTTP_LOAD_FLAG_SUFFIX))
 NT_FILES_HTTP_LOADED_FLAGS := $(RDF_NT_FILES:.nt=$(HTTP_LOAD_FLAG_SUFFIX))
-RDF_FILES_HTTP_LOADED_FLAGS := $(TTL_FILES_HTTP_LOADED_FLAGS) $(NT_FILES_HTTP_LOADED_FLAGS)
+# Combine all flags, removing duplicates (ontology files are also in TTL_FILES)
+RDF_FILES_HTTP_LOADED_FLAGS := $(sort $(TTL_FILES_HTTP_LOADED_FLAGS) $(NT_FILES_HTTP_LOADED_FLAGS))
+# All TTL flags that aren't ontology files
+NON_ONTOLOGY_TTL_FLAGS := $(filter-out $(ONTOLOGY_FILES_HTTP_LOADED_FLAGS),$(TTL_FILES_HTTP_LOADED_FLAGS))
 
 #
 # HTTP load rules - load via HTTP PUT to running server
@@ -40,7 +43,13 @@ RDF_FILES_HTTP_LOADED_FLAGS := $(TTL_FILES_HTTP_LOADED_FLAGS) $(NT_FILES_HTTP_LO
 # Supports parallel execution (use make -j)
 # Static pattern rules to support dynamic flag suffix
 #
-$(filter %.ttl$(HTTP_LOAD_FLAG_SUFFIX),$(ONTOLOGY_FILES_HTTP_LOADED_FLAGS) $(TTL_FILES_HTTP_LOADED_FLAGS)): %$(HTTP_LOAD_FLAG_SUFFIX): %
+# Note: The flag substitution removes the extension (.ttl or .nt), so:
+#   file.ttl -> file$(HTTP_LOAD_FLAG_SUFFIX)
+#   file.nt  -> file$(HTTP_LOAD_FLAG_SUFFIX)
+# The prerequisite must add the extension back: %.ttl or %.nt
+#
+# Rule for ontology TTL files
+$(ONTOLOGY_FILES_HTTP_LOADED_FLAGS): %$(HTTP_LOAD_FLAG_SUFFIX): %.ttl
 	@file="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
 		$(CURL_BIN) -sf -X PUT -H "Content-Type: text/turtle" \
@@ -49,7 +58,17 @@ $(filter %.ttl$(HTTP_LOAD_FLAG_SUFFIX),$(ONTOLOGY_FILES_HTTP_LOADED_FLAGS) $(TTL
 		|| { printf "$(red)ERROR: Failed to load $${file}. Is the SPARQL server running at $(EKG_SPARQL_HEALTH_ENDPOINT)?$(normal)\n" >&2; exit 1; }
 	@touch $@
 
-$(NT_FILES_HTTP_LOADED_FLAGS): %$(HTTP_LOAD_FLAG_SUFFIX): %
+# Rule for non-ontology TTL files (use-case, static-dataset, etc.)
+$(NON_ONTOLOGY_TTL_FLAGS): %$(HTTP_LOAD_FLAG_SUFFIX): %.ttl
+	@file="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
+	@graph_name="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
+		$(CURL_BIN) -sf -X PUT -H "Content-Type: text/turtle" \
+			--data-binary @$< \
+			"$(EKG_SPARQL_STORE_ENDPOINT)?graph=$${graph_name}" \
+		|| { printf "$(red)ERROR: Failed to load $${file}. Is the SPARQL server running at $(EKG_SPARQL_HEALTH_ENDPOINT)?$(normal)\n" >&2; exit 1; }
+	@touch $@
+
+$(NT_FILES_HTTP_LOADED_FLAGS): %$(HTTP_LOAD_FLAG_SUFFIX): %.nt
 	@file="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
 		$(CURL_BIN) -sf -X PUT -H "Content-Type: application/n-triples" \
