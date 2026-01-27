@@ -20,6 +20,7 @@ MK_DIR := $(GIT_ROOT)/.make
 endif
 
 include $(MK_DIR)/os.mk
+include $(MK_DIR)/coreutils.mk
 
 FLYCTL_BIN := $(call where-is-binary,flyctl)
 
@@ -80,14 +81,24 @@ endif
 # fly.toml output path
 FLY_TOML ?= $(GIT_ROOT)/fly.toml
 
+.PHONY: flyctl-install
+flyctl-install:
+ifndef FLYCTL_BIN
+	@echo "Installing flyctl..."
+	@curl -L https://fly.io/install.sh | sh
+	@echo "flyctl installed. You may need to add ~/.fly/bin to your PATH"
+else
+	@echo "flyctl is already installed at $(FLYCTL_BIN)"
+endif
+
 .PHONY: fly-check
 ifdef FLYCTL_BIN
 fly-check:
 	@echo "Using flyctl at $(FLYCTL_BIN)"
 else
-fly-check:
-	@echo "flyctl not found. Install it with: curl -L https://fly.io/install.sh | sh"
-	@exit 1
+fly-check: flyctl-install
+	@# Re-check after install
+	@command -v flyctl >/dev/null 2>&1 || (echo "flyctl still not found after install" && exit 1)
 endif
 
 #
@@ -169,7 +180,7 @@ endif
 # Deploy to Fly.io (generates fly.toml first)
 #
 .PHONY: fly-deploy
-fly-deploy: fly-check fly-generate-toml
+fly-deploy: coreutils-check fly-check fly-generate-toml
 ifndef FLY_API_TOKEN
 	$(error FLY_API_TOKEN is not set)
 endif

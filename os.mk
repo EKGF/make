@@ -210,7 +210,9 @@ gray   := \033[100m
 REALPATH_BIN := $(call where-is-binary,grealpath)
 ifndef REALPATH_BIN
 ifeq ($(UNAME_S_lc),darwin)
-$(error GNU realpath is not installed, please install it using 'brew install coreutils')
+# On macOS, grealpath is required but missing - will be installed by coreutils-check target
+REALPATH_BIN := grealpath
+_NEEDS_COREUTILS := 1
 else
 REALPATH_BIN := $(call where-is-binary,realpath)
 endif
