@@ -15,6 +15,15 @@ MK_DIR := $(GIT_ROOT)/.make
 endif
 
 #
+# Auto-detect graphdb-* targets and enable GraphDB support.
+# This allows `gmake graphdb-serve` to work even when EKG_VARIANT=oxigraph in .env.
+#
+ifneq ($(filter graphdb-%,$(MAKECMDGOALS)),)
+USE_GRAPHDB := 1
+EKG_VARIANT := graphdb
+endif
+
+#
 # GraphDB support is disabled by default.
 # Set USE_GRAPHDB=1 to enable GraphDB functionality.
 #

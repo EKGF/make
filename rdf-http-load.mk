@@ -19,31 +19,41 @@ endif
 include $(MK_DIR)/rdf-files.mk
 include $(MK_DIR)/curl.mk
 
+# Environment for flag files - prevents cross-environment conflicts
+# e.g., loading to production won't mark files as loaded for local
+EKG_ENV ?= local
+EKG_VARIANT ?= oxigraph
+
+# Flag file suffix includes variant and environment to prevent conflicts
+# e.g., .http-loaded.oxigraph.local.flag vs .http-loaded.oxigraph.production.flag
+HTTP_LOAD_FLAG_SUFFIX := .http-loaded.$(EKG_VARIANT).$(EKG_ENV).flag
+
 # HTTP load flags (HTTP-based, server must be running, supports parallel)
-ONTOLOGY_FILES_HTTP_LOADED_FLAGS := $(ONTOLOGY_FILES:.ttl=.http-loaded.flag)
-TTL_FILES_HTTP_LOADED_FLAGS := $(RDF_TTL_FILES:.ttl=.http-loaded.flag)
-NT_FILES_HTTP_LOADED_FLAGS := $(RDF_NT_FILES:.nt=.http-loaded.flag)
+ONTOLOGY_FILES_HTTP_LOADED_FLAGS := $(ONTOLOGY_FILES:.ttl=$(HTTP_LOAD_FLAG_SUFFIX))
+TTL_FILES_HTTP_LOADED_FLAGS := $(RDF_TTL_FILES:.ttl=$(HTTP_LOAD_FLAG_SUFFIX))
+NT_FILES_HTTP_LOADED_FLAGS := $(RDF_NT_FILES:.nt=$(HTTP_LOAD_FLAG_SUFFIX))
 RDF_FILES_HTTP_LOADED_FLAGS := $(TTL_FILES_HTTP_LOADED_FLAGS) $(NT_FILES_HTTP_LOADED_FLAGS)
 
 #
 # HTTP load rules - load via HTTP PUT to running server
 # Uses W3C SPARQL 1.1 Graph Store HTTP Protocol
 # Supports parallel execution (use make -j)
+# Static pattern rules to support dynamic flag suffix
 #
-%.http-loaded.flag: %.ttl
-	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
-	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
+$(filter %.ttl$(HTTP_LOAD_FLAG_SUFFIX),$(ONTOLOGY_FILES_HTTP_LOADED_FLAGS) $(TTL_FILES_HTTP_LOADED_FLAGS)): %$(HTTP_LOAD_FLAG_SUFFIX): %
+	@file="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
+	@graph_name="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
 		$(CURL_BIN) -sf -X PUT -H "Content-Type: text/turtle" \
-			--data-binary @$? \
+			--data-binary @$< \
 			"$(EKG_SPARQL_STORE_ENDPOINT)?graph=$${graph_name}" \
 		|| { printf "$(red)ERROR: Failed to load $${file}. Is the SPARQL server running at $(EKG_SPARQL_HEALTH_ENDPOINT)?$(normal)\n" >&2; exit 1; }
 	@touch $@
 
-%.http-loaded.flag: %.nt
-	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
-	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
+$(NT_FILES_HTTP_LOADED_FLAGS): %$(HTTP_LOAD_FLAG_SUFFIX): %
+	@file="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
+	@graph_name="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
 		$(CURL_BIN) -sf -X PUT -H "Content-Type: application/n-triples" \
-			--data-binary @$? \
+			--data-binary @$< \
 			"$(EKG_SPARQL_STORE_ENDPOINT)?graph=$${graph_name}" \
 		|| { printf "$(red)ERROR: Failed to load $${file}. Is the SPARQL server running at $(EKG_SPARQL_HEALTH_ENDPOINT)?$(normal)\n" >&2; exit 1; }
 	@touch $@
@@ -52,14 +62,19 @@ RDF_FILES_HTTP_LOADED_FLAGS := $(TTL_FILES_HTTP_LOADED_FLAGS) $(NT_FILES_HTTP_LO
 rdf-http-load-flags-delete:
 	@rm -f $(ONTOLOGY_FILES_HTTP_LOADED_FLAGS) $(TTL_FILES_HTTP_LOADED_FLAGS) $(NT_FILES_HTTP_LOADED_FLAGS) >/dev/null 2>&1 || true
 
+.PHONY: rdf-http-load-flags-delete-all
+rdf-http-load-flags-delete-all:
+	@find $(GIT_ROOT) -name "*.http-loaded.*.flag" -delete 2>/dev/null || true
+
 #
 # Check if SPARQL server is running
 #
 .PHONY: sparql-server-check
 sparql-server-check:
-ifndef EKG_SPARQL_HEALTH_ENDPOINT
-	$(error EKG_SPARQL_HEALTH_ENDPOINT is not set. Configure it in .env files or environment)
-endif
+	@if [ -z "$(EKG_SPARQL_HEALTH_ENDPOINT)" ]; then \
+		printf "$(red)ERROR: EKG_SPARQL_HEALTH_ENDPOINT is not set. Configure it in .env files or environment$(normal)\n"; \
+		exit 1; \
+	fi
 	@$(CURL_BIN) -sf "$(EKG_SPARQL_HEALTH_ENDPOINT)" >/dev/null 2>&1 \
 		|| { printf "$(red)ERROR: SPARQL server is not running at $(EKG_SPARQL_HEALTH_ENDPOINT)$(normal)\n"; exit 1; }
 

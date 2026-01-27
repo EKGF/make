@@ -31,26 +31,33 @@ EKG_SPARQL_UPDATE_ENDPOINT ?= http://localhost:$(OXIGRAPH_PORT)/update
 # Store endpoint derived from health endpoint (strip trailing slash, add /store)
 EKG_SPARQL_STORE_ENDPOINT ?= $(patsubst %/,%,$(EKG_SPARQL_HEALTH_ENDPOINT))/store
 
+# Environment for flag files - prevents cross-environment conflicts
+EKG_ENV ?= local
+
+# Bulk load flag suffix includes variant and environment
+BULK_LOAD_FLAG_SUFFIX := .bulk-loaded.$(EKG_VARIANT).$(EKG_ENV).flag
+
 # Bulk load flags (CLI-based, requires server to be stopped)
-ONTOLOGY_FILES_BULK_LOADED_FLAGS := $(ONTOLOGY_FILES:.ttl=.bulk-loaded.flag)
-TTL_FILES_BULK_LOADED_FLAGS := $(RDF_TTL_FILES:.ttl=.bulk-loaded.flag)
-NT_FILES_BULK_LOADED_FLAGS := $(RDF_NT_FILES:.nt=.bulk-loaded.flag)
+ONTOLOGY_FILES_BULK_LOADED_FLAGS := $(ONTOLOGY_FILES:.ttl=$(BULK_LOAD_FLAG_SUFFIX))
+TTL_FILES_BULK_LOADED_FLAGS := $(RDF_TTL_FILES:.ttl=$(BULK_LOAD_FLAG_SUFFIX))
+NT_FILES_BULK_LOADED_FLAGS := $(RDF_NT_FILES:.nt=$(BULK_LOAD_FLAG_SUFFIX))
 RDF_FILES_BULK_LOADED_FLAGS := $(TTL_FILES_BULK_LOADED_FLAGS) $(NT_FILES_BULK_LOADED_FLAGS)
 
 #
 # Bulk load rules - load directly to database files via CLI
 # Server must be stopped (oxigraph-kill is a dependency)
+# Static pattern rules to support dynamic flag suffix
 #
-%.bulk-loaded.flag: %.ttl
-	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "Bulk loading RDF File $(green)$${file}$(normal)\n"
-	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
-		ulimit -n 10240 && $(OXIGRAPH_BIN) load --location $(OXIGRAPH_LOCATION) --file $? --graph $${graph_name} 2>&1 | { grep -v "If you plan to run a read-heavy workload" || true; }
+$(filter %.ttl$(BULK_LOAD_FLAG_SUFFIX),$(ONTOLOGY_FILES_BULK_LOADED_FLAGS) $(TTL_FILES_BULK_LOADED_FLAGS)): %$(BULK_LOAD_FLAG_SUFFIX): %
+	@file="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "Bulk loading RDF File $(green)$${file}$(normal)\n"
+	@graph_name="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
+		ulimit -n 10240 && $(OXIGRAPH_BIN) load --location $(OXIGRAPH_LOCATION) --file $< --graph $${graph_name} 2>&1 | { grep -v "If you plan to run a read-heavy workload" || true; }
 	@touch $@
 
-%.bulk-loaded.flag: %.nt
-	@file="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "Bulk loading RDF File $(green)$${file}$(normal)\n"
-	@graph_name="$$(echo $? | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
-		ulimit -n 10240 && $(OXIGRAPH_BIN) load --location $(OXIGRAPH_LOCATION) --file $? --graph $${graph_name} 2>&1 | { grep -v "If you plan to run a read-heavy workload" || true; }
+$(NT_FILES_BULK_LOADED_FLAGS): %$(BULK_LOAD_FLAG_SUFFIX): %
+	@file="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "Bulk loading RDF File $(green)$${file}$(normal)\n"
+	@graph_name="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
+		ulimit -n 10240 && $(OXIGRAPH_BIN) load --location $(OXIGRAPH_LOCATION) --file $< --graph $${graph_name} 2>&1 | { grep -v "If you plan to run a read-heavy workload" || true; }
 	@touch $@
 
 #
@@ -72,11 +79,18 @@ oxigraph-dump-trig: $(TMP_DIR)/oxigraph-everything.trig
 oxigraph-bulk-load-flags-delete:
 	@rm -f $(ONTOLOGY_FILES_BULK_LOADED_FLAGS) $(TTL_FILES_BULK_LOADED_FLAGS) $(NT_FILES_BULK_LOADED_FLAGS) >/dev/null 2>&1 || true
 
+.PHONY: oxigraph-bulk-load-flags-delete-all
+oxigraph-bulk-load-flags-delete-all:
+	@find $(GIT_ROOT) -name "*.bulk-loaded.*.flag" -delete 2>/dev/null || true
+
 .PHONY: oxigraph-http-load-flags-delete
 oxigraph-http-load-flags-delete: rdf-http-load-flags-delete
 
 .PHONY: oxigraph-load-flags-delete
 oxigraph-load-flags-delete: oxigraph-bulk-load-flags-delete oxigraph-http-load-flags-delete
+
+.PHONY: oxigraph-load-flags-delete-all
+oxigraph-load-flags-delete-all: oxigraph-bulk-load-flags-delete-all rdf-http-load-flags-delete-all
 
 #
 # Bulk load: kills server first, loads via CLI (fast, sequential)

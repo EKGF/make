@@ -15,6 +15,15 @@ MK_DIR := $(GIT_ROOT)/.make
 endif
 
 #
+# Auto-detect oxigraph-* targets and enable OxiGraph support.
+# This allows `gmake oxigraph-serve` to work even when EKG_VARIANT=graphdb in .env.
+#
+ifneq ($(filter oxigraph-%,$(MAKECMDGOALS)),)
+USE_OXIGRAPH := 1
+EKG_VARIANT := oxigraph
+endif
+
+#
 # OxiGraph support is disabled by default.
 # Set USE_OXIGRAPH=1 to enable OxiGraph functionality.
 #
