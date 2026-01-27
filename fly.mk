@@ -187,8 +187,13 @@ ifndef FLY_API_TOKEN
 	$(error FLY_API_TOKEN is not set)
 endif
 	@echo "Deploying $(FLY_APP_NAME) to Fly.io..."
-	# Create app (no-op if already exists)
-	$(FLYCTL_BIN) apps create $(FLY_APP_NAME) --org $(FLY_ORG) || true
+	# Create app if it doesn't exist
+	@if $(FLYCTL_BIN) apps list --json 2>/dev/null | jq -e '.[] | select(.Name == "$(FLY_APP_NAME)")' >/dev/null 2>&1; then \
+		echo "App $(FLY_APP_NAME) already exists"; \
+	else \
+		echo "Creating app $(FLY_APP_NAME)..."; \
+		$(FLYCTL_BIN) apps create $(FLY_APP_NAME) --org $(FLY_ORG); \
+	fi
 	# Create volume if none exists
 	@EXISTING_VOLUMES=$$($(FLYCTL_BIN) volumes list -a $(FLY_APP_NAME) --json 2>/dev/null | jq length); \
 	if [ "$$EXISTING_VOLUMES" = "0" ] || [ -z "$$EXISTING_VOLUMES" ]; then \
