@@ -46,8 +46,11 @@ endif
 
 ifneq ($(skip_llvm_check),1)
 ifeq ("$(wildcard $(LLVM_LIB_PATH))","")
-$(warning Directory $(LLVM_LIB_PATH) does not exist, we need to install LLVM)
-$(shell $(MAKE) --no-print-directory --environment-overrides --no-builtin-rules llvm-install-with-brew skip_cargo_check=1 skip_llvm_check=1)
+# Only warn, don't auto-install at parse time (causes issues in CI)
+# Use 'make llvm-install' to install manually if needed
+ifeq ($(UNAME_S_lc),darwin)
+$(warning Directory $(LLVM_LIB_PATH) does not exist. Run 'make llvm-install-with-brew' to install LLVM)
+endif
 endif
 endif
 
@@ -117,9 +120,31 @@ endif
 
 .PHONY: llvm-install-with-brew
 llvm-install-with-brew: brew-check
-	$(BREW_BIN) install --overwrite llvm@$(LLVM_MAIN_VERSION_EXPECTED)
-	$(BREW_BIN) unlink llvm@$(LLVM_MAIN_VERSION_EXPECTED)
-	$(BREW_BIN) link --force --overwrite llvm@$(LLVM_MAIN_VERSION_EXPECTED)
+ifeq ($(UNAME_S_lc),darwin)
+	$(BREW_BIN) install llvm@$(LLVM_MAIN_VERSION_EXPECTED) || true
+	$(BREW_BIN) unlink llvm@$(LLVM_MAIN_VERSION_EXPECTED) || true
+	$(BREW_BIN) link --force llvm@$(LLVM_MAIN_VERSION_EXPECTED) || true
+else
+	@echo "LLVM install via brew not supported on Linux. Use 'make llvm-install-apt' instead."
+endif
+
+.PHONY: llvm-install-apt
+llvm-install-apt:
+ifeq ($(UNAME_S_lc),linux)
+	sudo apt-get update && sudo apt-get install -y llvm-$(LLVM_MAIN_VERSION_EXPECTED) clang-$(LLVM_MAIN_VERSION_EXPECTED)
+else
+	@echo "apt-get only available on Linux"
+endif
+
+.PHONY: llvm-install
+llvm-install:
+ifeq ($(UNAME_S_lc),darwin)
+	$(MAKE) llvm-install-with-brew
+else ifeq ($(UNAME_S_lc),linux)
+	$(MAKE) llvm-install-apt
+else
+	@echo "Unknown platform: $(UNAME_S_lc)"
+endif
 
 .PHONY: clang-check
 clang-check: llvm-check
