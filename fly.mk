@@ -75,7 +75,7 @@ FLY_VOLUME_SIZE ?= $(_FLY_DEFAULT_VOLUME_SIZE)
 FLY_MOUNT_DEST ?= /opt/graphdb/data
 FLY_PROCESS_CMD ?=
 FLY_ENV_VARS ?= GDB_HEAP_SIZE = "1g"
-FLY_BUILD_ARGS ?= EKG_ENV=$(EKG_ENV)
+FLY_BUILD_ARGS ?= EKG_ENV = "$(EKG_ENV)"
 endif
 
 # fly.toml output path
