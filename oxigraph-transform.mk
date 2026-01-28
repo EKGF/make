@@ -13,6 +13,15 @@ ifndef MK_DIR
 MK_DIR := $(GIT_ROOT)/.make
 endif
 
+#
+# Auto-detect oxigraph-* targets and enable OxiGraph support.
+# This allows `gmake oxigraph-transform-*` to work even when EKG_VARIANT=graphdb in .env.
+#
+ifneq ($(filter oxigraph-%,$(MAKECMDGOALS)),)
+USE_OXIGRAPH := 1
+EKG_VARIANT := oxigraph
+endif
+
 ifeq ($(USE_OXIGRAPH),1)
 
 include $(MK_DIR)/jq.mk
