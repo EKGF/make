@@ -31,14 +31,21 @@ ifeq ($(USE_OXIGRAPH),1)
 include $(MK_DIR)/oxigraph.mk
 include $(MK_DIR)/rdf-http-load.mk
 
-# SPARQL endpoints - loaded from dotenvage (.env files) or can be overridden.
-# These support any SPARQL 1.1 compliant triplestore (Oxigraph, GraphDB, etc.)
-# Set NODE_ENV=production to load production endpoints from .env.production
+# SPARQL endpoints for Oxigraph.
+# When oxigraph-* targets are explicitly requested (detected via MAKECMDGOALS above),
+# force Oxigraph endpoints with := to override any values set by dotenvage.
+# Otherwise use ?= as defaults for when EKG_VARIANT is already oxigraph.
+ifneq ($(filter oxigraph-%,$(MAKECMDGOALS)),)
+EKG_SPARQL_HEALTH_ENDPOINT := http://localhost:$(OXIGRAPH_PORT)/
+EKG_SPARQL_QUERY_ENDPOINT := http://localhost:$(OXIGRAPH_PORT)/query
+EKG_SPARQL_UPDATE_ENDPOINT := http://localhost:$(OXIGRAPH_PORT)/update
+EKG_SPARQL_STORE_ENDPOINT := http://localhost:$(OXIGRAPH_PORT)/store
+else
 EKG_SPARQL_HEALTH_ENDPOINT ?= http://localhost:$(OXIGRAPH_PORT)/
 EKG_SPARQL_QUERY_ENDPOINT ?= http://localhost:$(OXIGRAPH_PORT)/query
 EKG_SPARQL_UPDATE_ENDPOINT ?= http://localhost:$(OXIGRAPH_PORT)/update
-# Store endpoint derived from health endpoint (strip trailing slash, add /store)
-EKG_SPARQL_STORE_ENDPOINT ?= $(patsubst %/,%,$(EKG_SPARQL_HEALTH_ENDPOINT))/store
+EKG_SPARQL_STORE_ENDPOINT ?= http://localhost:$(OXIGRAPH_PORT)/store
+endif
 
 # Environment for flag files - prevents cross-environment conflicts
 EKG_ENV ?= local
@@ -165,9 +172,21 @@ OXIGRAPH_HTTP_LOAD_JOBS ?= 20
 
 .PHONY: oxigraph-http-load
 oxigraph-http-load: oxigraph-server-check
-	@$(MAKE) -j$(OXIGRAPH_HTTP_LOAD_JOBS) --no-print-directory _rdf-http-load-files
+	@$(MAKE) -j$(OXIGRAPH_HTTP_LOAD_JOBS) --no-print-directory \
+		EKG_VARIANT=$(EKG_VARIANT) \
+		EKG_SPARQL_HEALTH_ENDPOINT=$(EKG_SPARQL_HEALTH_ENDPOINT) \
+		EKG_SPARQL_QUERY_ENDPOINT=$(EKG_SPARQL_QUERY_ENDPOINT) \
+		EKG_SPARQL_UPDATE_ENDPOINT=$(EKG_SPARQL_UPDATE_ENDPOINT) \
+		EKG_SPARQL_STORE_ENDPOINT=$(EKG_SPARQL_STORE_ENDPOINT) \
+		_rdf-http-load-files
 	@printf "$(green)HTTP loaded all RDF files$(normal)\n"
-	@$(MAKE) --no-print-directory _rdf-http-load-sparql-queries
+	@$(MAKE) --no-print-directory \
+		EKG_VARIANT=$(EKG_VARIANT) \
+		EKG_SPARQL_HEALTH_ENDPOINT=$(EKG_SPARQL_HEALTH_ENDPOINT) \
+		EKG_SPARQL_QUERY_ENDPOINT=$(EKG_SPARQL_QUERY_ENDPOINT) \
+		EKG_SPARQL_UPDATE_ENDPOINT=$(EKG_SPARQL_UPDATE_ENDPOINT) \
+		EKG_SPARQL_STORE_ENDPOINT=$(EKG_SPARQL_STORE_ENDPOINT) \
+		_rdf-http-load-sparql-queries
 
 #
 # Convenience aliases
