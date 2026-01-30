@@ -29,8 +29,7 @@ endif
 #
 ifeq ($(USE_GRAPHDB),1)
 
-include $(MK_DIR)/os.mk
-include $(MK_DIR)/docker.mk
+include $(MK_DIR)/triplestore-docker.mk
 include $(MK_DIR)/dotenvage.mk
 include $(MK_DIR)/rdf-http-load.mk
 
@@ -41,48 +40,60 @@ EKG_AGE_KEY ?= $(shell $(DOTENVAGE_BIN) get EKG_AGE_KEY 2>/dev/null)
 endif
 
 GRAPHDB_PORT ?= 7200
-GRAPHDB_CONTAINER_NAME ?= graphdb-local
 GRAPHDB_IMAGE_NAME ?= graphdb-local
 GRAPHDB_DOCKERFILE ?= $(GIT_ROOT)/Dockerfile.graphdb
-GRAPHDB_DATA_DIR ?= $(GIT_ROOT)/.graphdb
 GRAPHDB_REPO_NAME ?= ekg
 
-# Docker command (prefer OrbStack if available)
-DOCKER_CMD := $(if $(wildcard $(ORB_STACK_DOCKER)),$(ORB_STACK_DOCKER),docker)
+# Container and volume names derived from triplestore-docker.mk
+GRAPHDB_CONTAINER_NAME = $(TRIPLESTORE_CONTAINER_NAME)
+GRAPHDB_VOLUME_NAME = $(TRIPLESTORE_VOLUME_NAME)
 
+#
+# Preflight check delegates to shared docker-daemon-check
+#
 .PHONY: graphdb-check
-graphdb-check:
-	@if ! command -v $(DOCKER_CMD) >/dev/null 2>&1; then \
-		echo "Docker is not installed. Please install Docker or OrbStack."; \
-		exit 1; \
-	fi
-	@echo "Using Docker: $(DOCKER_CMD)"
-
-$(GRAPHDB_DATA_DIR):
-	@mkdir -p $@
+graphdb-check: docker-daemon-check
 
 # Determine which environment to build for (local by default for development)
 GRAPHDB_BUILD_ENV ?= local
 
+# Stamp file tracks when the Docker image was last built.
+# Make's dependency system rebuilds only when sources are newer.
+# Stored in .tmp/ alongside other temporary build artifacts.
+GRAPHDB_IMAGE_STAMP := $(GIT_ROOT)/.tmp/graphdb-image.stamp
+
+# Files that affect the Docker image content
+GRAPHDB_BUILD_SOURCES := \
+	$(GRAPHDB_DOCKERFILE) \
+	$(GIT_ROOT)/graphdb/repo-config.ttl \
+	$(GIT_ROOT)/.env.$(GRAPHDB_BUILD_ENV).graphdb
+
 #
-# Build the GraphDB Docker image
-# Uses EKG_ENV build arg to determine which .env file to bake in
+# Build the GraphDB Docker image (skips if image is up-to-date).
+# The stamp file makes this a proper Make dependency: graphdb-serve
+# depends on the stamp, the stamp depends on the build sources.
+# Uses EKG_ENV build arg to determine which .env file to bake in.
 #
-.PHONY: graphdb-build
-graphdb-build: graphdb-check
+$(GRAPHDB_IMAGE_STAMP): $(GRAPHDB_BUILD_SOURCES) | $(TMP_DIR) graphdb-check
 	@printf "$(bold)Building GraphDB Docker image for $(GRAPHDB_BUILD_ENV)...$(normal)\n"
 	$(DOCKER_CMD) build --load -t $(GRAPHDB_IMAGE_NAME) \
 		--build-arg EKG_ENV=$(GRAPHDB_BUILD_ENV) \
 		-f $(GRAPHDB_DOCKERFILE) $(GIT_ROOT)
+	@touch $@
+
+.PHONY: graphdb-build
+graphdb-build: $(GRAPHDB_IMAGE_STAMP)
 
 #
-# Run GraphDB in a Docker container
-# Data is persisted in .graphdb directory
-# License and config are baked into image; EKG_AGE_KEY decrypts at runtime
+# Run GraphDB in a Docker container with a named volume.
+# License and config are baked into image; EKG_AGE_KEY decrypts at runtime.
 #
 .PHONY: graphdb-serve
-graphdb-serve: $(GRAPHDB_DATA_DIR) graphdb-check graphdb-build
+graphdb-serve: triplestore-volume-ensure $(GRAPHDB_IMAGE_STAMP)
 	@printf "$(bold)Starting GraphDB on port $(GRAPHDB_PORT)...$(normal)\n"
+	@printf "  Container: $(GRAPHDB_CONTAINER_NAME)\n"
+	@printf "  Volume:    $(GRAPHDB_VOLUME_NAME)\n"
+	@printf "  Instance:  $(TRIPLESTORE_INSTANCE)\n"
 	@# Stop existing container if running
 	@$(DOCKER_CMD) stop $(GRAPHDB_CONTAINER_NAME) 2>/dev/null || true
 	@$(DOCKER_CMD) rm $(GRAPHDB_CONTAINER_NAME) 2>/dev/null || true
@@ -90,7 +101,7 @@ graphdb-serve: $(GRAPHDB_DATA_DIR) graphdb-check graphdb-build
 	$(DOCKER_CMD) run \
 		--name $(GRAPHDB_CONTAINER_NAME) \
 		-p $(GRAPHDB_PORT):7200 \
-		-v $(GRAPHDB_DATA_DIR):/opt/graphdb/data \
+		-v $(GRAPHDB_VOLUME_NAME):/opt/graphdb/data \
 		-e EKG_AGE_KEY="$(EKG_AGE_KEY)" \
 		$(GRAPHDB_IMAGE_NAME)
 
@@ -99,8 +110,11 @@ graphdb-serve: $(GRAPHDB_DATA_DIR) graphdb-check graphdb-build
 # License and config are baked into image; EKG_AGE_KEY decrypts at runtime
 #
 .PHONY: graphdb-serve-detached
-graphdb-serve-detached: $(GRAPHDB_DATA_DIR) graphdb-check graphdb-build
+graphdb-serve-detached: triplestore-volume-ensure $(GRAPHDB_IMAGE_STAMP)
 	@printf "$(bold)Starting GraphDB in background on port $(GRAPHDB_PORT)...$(normal)\n"
+	@printf "  Container: $(GRAPHDB_CONTAINER_NAME)\n"
+	@printf "  Volume:    $(GRAPHDB_VOLUME_NAME)\n"
+	@printf "  Instance:  $(TRIPLESTORE_INSTANCE)\n"
 	@# Stop existing container if running
 	@$(DOCKER_CMD) stop $(GRAPHDB_CONTAINER_NAME) 2>/dev/null || true
 	@$(DOCKER_CMD) rm $(GRAPHDB_CONTAINER_NAME) 2>/dev/null || true
@@ -108,7 +122,7 @@ graphdb-serve-detached: $(GRAPHDB_DATA_DIR) graphdb-check graphdb-build
 	$(DOCKER_CMD) run -d \
 		--name $(GRAPHDB_CONTAINER_NAME) \
 		-p $(GRAPHDB_PORT):7200 \
-		-v $(GRAPHDB_DATA_DIR):/opt/graphdb/data \
+		-v $(GRAPHDB_VOLUME_NAME):/opt/graphdb/data \
 		-e EKG_AGE_KEY="$(EKG_AGE_KEY)" \
 		$(GRAPHDB_IMAGE_NAME)
 	@printf "$(green)GraphDB started. Access at http://localhost:$(GRAPHDB_PORT)$(normal)\n"
@@ -141,22 +155,20 @@ graphdb-kill:
 	@$(DOCKER_CMD) rm $(GRAPHDB_CONTAINER_NAME) 2>/dev/null || true
 
 #
-# Delete the GraphDB data directory
+# Delete the GraphDB Docker volume
 #
 .PHONY: graphdb-delete-database
 graphdb-delete-database: graphdb-kill
-	@if [ -d $(GRAPHDB_DATA_DIR) ]; then \
-		echo "Deleting GraphDB database at $(GRAPHDB_DATA_DIR)"; \
-		rm -rf $(GRAPHDB_DATA_DIR); \
-	else \
-		echo "No GraphDB database to delete"; \
-	fi
+	@$(DOCKER_CMD) volume rm $(GRAPHDB_VOLUME_NAME) 2>/dev/null \
+		&& printf "$(green)GraphDB volume $(GRAPHDB_VOLUME_NAME) deleted$(normal)\n" \
+		|| printf "No GraphDB volume $(GRAPHDB_VOLUME_NAME) to delete\n"
 
 #
-# Clean everything (stop container, delete data)
+# Clean everything (stop container, delete volume, remove image stamp)
 #
 .PHONY: graphdb-clean
 graphdb-clean: graphdb-kill graphdb-delete-database
+	@rm -f $(GRAPHDB_IMAGE_STAMP)
 	@printf "$(green)GraphDB cleaned$(normal)\n"
 
 #
@@ -195,11 +207,13 @@ graphdb-repo-check:
 graphdb-status:
 	@if $(DOCKER_CMD) ps --filter "name=$(GRAPHDB_CONTAINER_NAME)" --format "{{.Names}}" | grep -q $(GRAPHDB_CONTAINER_NAME); then \
 		echo "GraphDB container is running"; \
-		echo "  Container: $(GRAPHDB_CONTAINER_NAME)"; \
-		echo "  Port: $(GRAPHDB_PORT)"; \
-		echo "  URL: http://localhost:$(GRAPHDB_PORT)"; \
+		echo "  Container:  $(GRAPHDB_CONTAINER_NAME)"; \
+		echo "  Volume:     $(GRAPHDB_VOLUME_NAME)"; \
+		echo "  Instance:   $(TRIPLESTORE_INSTANCE)"; \
+		echo "  Port:       $(GRAPHDB_PORT)"; \
+		echo "  URL:        http://localhost:$(GRAPHDB_PORT)"; \
 		echo "  Repository: $(GRAPHDB_REPO_NAME)"; \
-		echo "  SPARQL: http://localhost:$(GRAPHDB_PORT)/repositories/$(GRAPHDB_REPO_NAME)"; \
+		echo "  SPARQL:     http://localhost:$(GRAPHDB_PORT)/repositories/$(GRAPHDB_REPO_NAME)"; \
 	else \
 		echo "GraphDB container is not running"; \
 	fi

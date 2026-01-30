@@ -2,6 +2,10 @@
 # Generic functions to deal with the open-source OxiGraph semantic graph database.
 # See https://github.com/oxigraph/oxigraph
 #
+# Supports two deployment modes:
+#   - Native binary (default): Fast, installed via cargo, data in .oxigraph/
+#   - Docker mode (OXIGRAPH_DOCKER=1): Runs in Docker with named volume
+#
 ifndef _MK_OXIGRAPH_MK_
 _MK_OXIGRAPH_MK_ := 1
 
@@ -33,13 +37,125 @@ ifeq ($(USE_OXIGRAPH),1)
 # included indirectly via oxigraph-count.mk before we finish this file
 OXIGRAPH_PORT ?= 7879
 
+# Set OXIGRAPH_DOCKER=1 to run Oxigraph in Docker instead of native binary.
+# Docker mode uses named volumes and the upstream container image.
+OXIGRAPH_DOCKER ?= 0
+
 include $(MK_DIR)/os.mk
 include $(MK_DIR)/os-tools.mk
-include $(MK_DIR)/cargo.mk
 include $(MK_DIR)/rdf-files.mk
 include $(MK_DIR)/oxigraph-count.mk
 include $(MK_DIR)/oxigraph-test.mk
 include $(MK_DIR)/oxigraph-transform.mk
+
+OXIGRAPH_VERSION_EXPECTED := 0.5.3
+
+# ---------------------------------------------------------------------------
+# Docker mode
+# ---------------------------------------------------------------------------
+ifeq ($(OXIGRAPH_DOCKER),1)
+
+include $(MK_DIR)/triplestore-docker.mk
+
+OXIGRAPH_DOCKER_IMAGE ?= ghcr.io/oxigraph/oxigraph:$(OXIGRAPH_VERSION_EXPECTED)
+OXIGRAPH_DOCKER_INTERNAL_PORT ?= 7878
+OXIGRAPH_DOCKER_MOUNT_DEST ?= /data
+
+# Container and volume names derived from triplestore-docker.mk
+OXIGRAPH_CONTAINER_NAME = $(TRIPLESTORE_CONTAINER_NAME)
+OXIGRAPH_VOLUME_NAME = $(TRIPLESTORE_VOLUME_NAME)
+
+.PHONY: oxigraph-check
+oxigraph-check: docker-daemon-check
+
+#
+# Serve Oxigraph in Docker (foreground)
+#
+.PHONY: oxigraph-docker-serve
+oxigraph-docker-serve: triplestore-volume-ensure
+	@printf "$(bold)Starting Oxigraph Docker on port $(OXIGRAPH_PORT)...$(normal)\n"
+	@printf "  Container: $(OXIGRAPH_CONTAINER_NAME)\n"
+	@printf "  Volume:    $(OXIGRAPH_VOLUME_NAME)\n"
+	@printf "  Instance:  $(TRIPLESTORE_INSTANCE)\n"
+	@$(DOCKER_CMD) stop $(OXIGRAPH_CONTAINER_NAME) 2>/dev/null || true
+	@$(DOCKER_CMD) rm $(OXIGRAPH_CONTAINER_NAME) 2>/dev/null || true
+	$(DOCKER_CMD) run \
+		--name $(OXIGRAPH_CONTAINER_NAME) \
+		-p $(OXIGRAPH_PORT):$(OXIGRAPH_DOCKER_INTERNAL_PORT) \
+		-v $(OXIGRAPH_VOLUME_NAME):$(OXIGRAPH_DOCKER_MOUNT_DEST) \
+		$(OXIGRAPH_DOCKER_IMAGE) \
+		serve --location $(OXIGRAPH_DOCKER_MOUNT_DEST) --bind 0.0.0.0:$(OXIGRAPH_DOCKER_INTERNAL_PORT)
+
+#
+# Serve Oxigraph in Docker (detached)
+#
+.PHONY: oxigraph-docker-serve-detached
+oxigraph-docker-serve-detached: triplestore-volume-ensure
+	@printf "$(bold)Starting Oxigraph Docker (detached) on port $(OXIGRAPH_PORT)...$(normal)\n"
+	@printf "  Container: $(OXIGRAPH_CONTAINER_NAME)\n"
+	@printf "  Volume:    $(OXIGRAPH_VOLUME_NAME)\n"
+	@printf "  Instance:  $(TRIPLESTORE_INSTANCE)\n"
+	@$(DOCKER_CMD) stop $(OXIGRAPH_CONTAINER_NAME) 2>/dev/null || true
+	@$(DOCKER_CMD) rm $(OXIGRAPH_CONTAINER_NAME) 2>/dev/null || true
+	$(DOCKER_CMD) run -d \
+		--name $(OXIGRAPH_CONTAINER_NAME) \
+		-p $(OXIGRAPH_PORT):$(OXIGRAPH_DOCKER_INTERNAL_PORT) \
+		-v $(OXIGRAPH_VOLUME_NAME):$(OXIGRAPH_DOCKER_MOUNT_DEST) \
+		$(OXIGRAPH_DOCKER_IMAGE) \
+		serve --location $(OXIGRAPH_DOCKER_MOUNT_DEST) --bind 0.0.0.0:$(OXIGRAPH_DOCKER_INTERNAL_PORT)
+	@printf "$(green)Oxigraph Docker started. Access at http://localhost:$(OXIGRAPH_PORT)$(normal)\n"
+	@printf "Use 'gmake oxigraph-docker-logs' to view logs\n"
+	@printf "Use 'gmake oxigraph-docker-stop' to stop the container\n"
+
+.PHONY: oxigraph-docker-logs
+oxigraph-docker-logs:
+	$(DOCKER_CMD) logs -f $(OXIGRAPH_CONTAINER_NAME)
+
+.PHONY: oxigraph-docker-stop
+oxigraph-docker-stop: triplestore-container-stop
+
+.PHONY: oxigraph-docker-kill
+oxigraph-docker-kill: triplestore-container-rm
+
+.PHONY: oxigraph-docker-clean
+oxigraph-docker-clean: triplestore-docker-clean
+
+.PHONY: oxigraph-docker-status
+oxigraph-docker-status: triplestore-docker-status
+
+# Dispatch main targets to Docker equivalents
+.PHONY: oxigraph-serve
+oxigraph-serve: oxigraph-docker-serve
+
+.PHONY: oxigraph-kill
+oxigraph-kill: oxigraph-docker-kill
+
+.PHONY: oxigraph-delete-database
+oxigraph-delete-database: oxigraph-kill
+	@$(DOCKER_CMD) volume rm $(OXIGRAPH_VOLUME_NAME) 2>/dev/null \
+		&& printf "$(green)Oxigraph volume $(OXIGRAPH_VOLUME_NAME) deleted$(normal)\n" \
+		|| printf "No Oxigraph volume $(OXIGRAPH_VOLUME_NAME) to delete\n"
+
+.PHONY: oxigraph-clean-info
+oxigraph-clean-info:
+	@echo "Cleaning OxiGraph (Docker mode)"
+
+.PHONY: oxigraph-clean
+oxigraph-clean: \
+	oxigraph-clean-info \
+	oxigraph-kill \
+	oxigraph-delete-database \
+	oxigraph-count-clean \
+	oxigraph-test-clean \
+	oxigraph-transform-clean \
+	oxigraph-load-flags-delete
+
+# ---------------------------------------------------------------------------
+# Native binary mode (default)
+# ---------------------------------------------------------------------------
+else # OXIGRAPH_DOCKER != 1
+
+include $(MK_DIR)/cargo.mk
 
 OXIGRAPH_SERVER_BIN_NAME := oxigraph
 OXIGRAPH_BIN := $(call where-is-binary,$(OXIGRAPH_SERVER_BIN_NAME))
@@ -49,7 +165,6 @@ OXIGRAPH_LOCATION := $(shell mkdir -p $(GIT_ROOT)/$(OXIGRAPH_LOCATION_NAME) 2>/d
 ifdef OXIGRAPH_BIN
 OXIGRAPH_VERSION := $(shell $(OXIGRAPH_BIN) --version | cut -d\  -f2)
 endif
-OXIGRAPH_VERSION_EXPECTED := 0.5.3
 ifeq ($(OXIGRAPH_VERSION),$(OXIGRAPH_VERSION_EXPECTED))
 OXIGRAPH_CHECKED := 1
 else
@@ -159,6 +274,8 @@ oxigraph-clean-transform-serve: \
 	oxigraph-count-after-transform\
 	oxigraph-run-transforms \
 	oxigraph-serve
+
+endif # OXIGRAPH_DOCKER
 
 endif # USE_OXIGRAPH
 

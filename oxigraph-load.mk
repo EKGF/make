@@ -43,6 +43,15 @@ EKG_SPARQL_STORE_ENDPOINT ?= $(patsubst %/,%,$(EKG_SPARQL_HEALTH_ENDPOINT))/stor
 # Environment for flag files - prevents cross-environment conflicts
 EKG_ENV ?= local
 
+# Environment for flag files - prevents cross-environment conflicts
+# (moved up so it's available to both Docker and native paths)
+
+# ---------------------------------------------------------------------------
+# Bulk loading requires native binary mode (direct CLI access to RocksDB).
+# In Docker mode, use HTTP loading instead.
+# ---------------------------------------------------------------------------
+ifneq ($(OXIGRAPH_DOCKER),1)
+
 # Bulk load flag suffix includes variant and environment
 BULK_LOAD_FLAG_SUFFIX := .bulk-loaded.$(EKG_VARIANT).$(EKG_ENV).flag
 
@@ -92,9 +101,6 @@ oxigraph-bulk-load-flags-delete:
 oxigraph-bulk-load-flags-delete-all:
 	@find $(GIT_ROOT) -name "*.bulk-loaded.*.flag" -delete 2>/dev/null || true
 
-.PHONY: oxigraph-http-load-flags-delete
-oxigraph-http-load-flags-delete: rdf-http-load-flags-delete
-
 .PHONY: oxigraph-load-flags-delete
 oxigraph-load-flags-delete: oxigraph-bulk-load-flags-delete oxigraph-http-load-flags-delete
 
@@ -107,6 +113,42 @@ oxigraph-load-flags-delete-all: oxigraph-bulk-load-flags-delete-all rdf-http-loa
 .PHONY: oxigraph-bulk-load
 oxigraph-bulk-load: oxigraph-kill $(ONTOLOGY_FILES_BULK_LOADED_FLAGS) $(RDF_FILES_BULK_LOADED_FLAGS)
 	@printf "$(green)Bulk loaded all RDF files$(normal)\n"
+
+else # OXIGRAPH_DOCKER == 1
+
+# In Docker mode, bulk load is not available (no direct filesystem access).
+# Provide stub targets that emit clear error messages.
+
+.PHONY: oxigraph-bulk-load
+oxigraph-bulk-load:
+	@printf "$(red)Bulk load is not supported in Docker mode.$(normal)\n"
+	@printf "Use 'gmake oxigraph-http-load' instead (requires server to be running).\n"
+	@exit 1
+
+.PHONY: oxigraph-dump-trig
+oxigraph-dump-trig:
+	@printf "$(red)Dump is not supported in Docker mode.$(normal)\n"
+	@exit 1
+
+.PHONY: oxigraph-bulk-load-flags-delete
+oxigraph-bulk-load-flags-delete:
+	@find $(GIT_ROOT) -name "*.bulk-loaded.*.flag" -delete 2>/dev/null || true
+
+.PHONY: oxigraph-bulk-load-flags-delete-all
+oxigraph-bulk-load-flags-delete-all:
+	@find $(GIT_ROOT) -name "*.bulk-loaded.*.flag" -delete 2>/dev/null || true
+
+.PHONY: oxigraph-load-flags-delete
+oxigraph-load-flags-delete: oxigraph-bulk-load-flags-delete oxigraph-http-load-flags-delete
+
+.PHONY: oxigraph-load-flags-delete-all
+oxigraph-load-flags-delete-all: oxigraph-bulk-load-flags-delete-all rdf-http-load-flags-delete-all
+
+endif # OXIGRAPH_DOCKER
+
+# HTTP load flag deletion works in both native and Docker mode
+.PHONY: oxigraph-http-load-flags-delete
+oxigraph-http-load-flags-delete: rdf-http-load-flags-delete
 
 #
 # Check if OxiGraph server is running (delegates to shared sparql-server-check)
