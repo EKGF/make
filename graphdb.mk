@@ -33,11 +33,19 @@ include $(MK_DIR)/triplestore-docker.mk
 include $(MK_DIR)/dotenvage.mk
 include $(MK_DIR)/rdf-http-load.mk
 
+# Ensure DOTENVAGE_BIN is available.
+# When dotenvage.mk is included early (before os.mk defines where-is-binary),
+# DOTENVAGE_BIN may be empty. Fall back to a direct PATH lookup.
+ifndef DOTENVAGE_BIN
+DOTENVAGE_BIN := $(shell command -v dotenvage 2>/dev/null)
+endif
+ifndef DOTENVAGE_BIN
+$(error dotenvage is not installed. Run: cargo binstall dotenvage)
+endif
+
 # Get EKG_AGE_KEY from dotenvage (it's filtered from dump for security)
 # This reads it from .env.local or the key file
-ifdef DOTENVAGE_BIN
 EKG_AGE_KEY ?= $(shell $(DOTENVAGE_BIN) get EKG_AGE_KEY 2>/dev/null)
-endif
 
 GRAPHDB_PORT ?= 7200
 GRAPHDB_IMAGE_NAME ?= graphdb-local

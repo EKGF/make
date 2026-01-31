@@ -24,6 +24,12 @@ include $(MK_DIR)/cargo.mk
 
 DOTENVAGE_BIN := $(call where-is-binary,dotenvage)
 
+# Fallback: when where-is-binary is not yet defined (e.g. dotenvage.mk is
+# included before os.mk has been loaded), try a direct PATH lookup.
+ifndef DOTENVAGE_BIN
+DOTENVAGE_BIN := $(shell command -v dotenvage 2>/dev/null)
+endif
+
 ifdef DOTENVAGE_BIN
 DOTENVAGE_VERSION := $(shell $(DOTENVAGE_BIN) --version 2>/dev/null | cut -d\  -f2)
 endif

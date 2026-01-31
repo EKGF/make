@@ -213,6 +213,11 @@ endif
 		echo "Setting EKG_AGE_KEY secret..."; \
 		echo "$(EKG_AGE_KEY)" | $(FLYCTL_BIN) secrets set EKG_AGE_KEY=- -a $(FLY_APP_NAME); \
 	fi
+	# Set EKG_SPARQL_AUTH_KEY secret if provided (needed for Caddy proxy auth)
+	@if [ -n "$(EKG_SPARQL_AUTH_KEY)" ]; then \
+		echo "Setting EKG_SPARQL_AUTH_KEY secret..."; \
+		echo "$(EKG_SPARQL_AUTH_KEY)" | $(FLYCTL_BIN) secrets set EKG_SPARQL_AUTH_KEY=- -a $(FLY_APP_NAME); \
+	fi
 	# Deploy with build args if specified
 	@if [ -n "$(FLY_BUILD_ARGS_CLI)" ]; then \
 		$(FLYCTL_BIN) deploy --remote-only --app $(FLY_APP_NAME) --build-arg $(FLY_BUILD_ARGS_CLI); \

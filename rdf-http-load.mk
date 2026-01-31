@@ -19,6 +19,13 @@ endif
 include $(MK_DIR)/rdf-files.mk
 include $(MK_DIR)/curl.mk
 
+# Build auth header for remote SPARQL requests (empty for local dev without token)
+ifdef EKG_SPARQL_AUTH_KEY
+SPARQL_AUTH_HEADER := -H "Authorization: Bearer $(EKG_SPARQL_AUTH_KEY)"
+else
+SPARQL_AUTH_HEADER :=
+endif
+
 # Environment for flag files - prevents cross-environment conflicts
 # e.g., loading to production won't mark files as loaded for local
 EKG_ENV ?= local
@@ -53,6 +60,7 @@ $(ONTOLOGY_FILES_HTTP_LOADED_FLAGS): %$(HTTP_LOAD_FLAG_SUFFIX): %.ttl
 	@file="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
 		$(CURL_BIN) -sf -X PUT -H "Content-Type: text/turtle" \
+			$(SPARQL_AUTH_HEADER) \
 			--data-binary @$< \
 			"$(EKG_SPARQL_STORE_ENDPOINT)?graph=$${graph_name}" \
 		|| { printf "$(red)ERROR: Failed to load $${file}. Is the SPARQL server running at $(EKG_SPARQL_HEALTH_ENDPOINT)?$(normal)\n" >&2; exit 1; }
@@ -63,6 +71,7 @@ $(NON_ONTOLOGY_TTL_FLAGS): %$(HTTP_LOAD_FLAG_SUFFIX): %.ttl
 	@file="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
 		$(CURL_BIN) -sf -X PUT -H "Content-Type: text/turtle" \
+			$(SPARQL_AUTH_HEADER) \
 			--data-binary @$< \
 			"$(EKG_SPARQL_STORE_ENDPOINT)?graph=$${graph_name}" \
 		|| { printf "$(red)ERROR: Failed to load $${file}. Is the SPARQL server running at $(EKG_SPARQL_HEALTH_ENDPOINT)?$(normal)\n" >&2; exit 1; }
@@ -72,6 +81,7 @@ $(NT_FILES_HTTP_LOADED_FLAGS): %$(HTTP_LOAD_FLAG_SUFFIX): %.nt
 	@file="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@@g')" && printf "HTTP loading RDF File $(green)$${file}$(normal)\n"
 	@graph_name="$$(echo $< | $(SED_BIN) 's@$(GIT_ROOT)/@file:///@g')" ; \
 		$(CURL_BIN) -sf -X PUT -H "Content-Type: application/n-triples" \
+			$(SPARQL_AUTH_HEADER) \
 			--data-binary @$< \
 			"$(EKG_SPARQL_STORE_ENDPOINT)?graph=$${graph_name}" \
 		|| { printf "$(red)ERROR: Failed to load $${file}. Is the SPARQL server running at $(EKG_SPARQL_HEALTH_ENDPOINT)?$(normal)\n" >&2; exit 1; }
@@ -122,6 +132,7 @@ _rdf-http-load-sparql-queries:
 			query_content="$$(cat "$$rq_file" | $(SED_BIN) 's/\\/\\\\/g' | $(SED_BIN) 's/"/\\"/g' | tr '\n' '\r' | $(SED_BIN) 's/\r/\\n/g')" ; \
 			sparql_update="PREFIX sparql-story: <https://ekgf.org/ontology/story-impl-sparql#> DELETE { GRAPH <$$graph_name> { ?impl sparql-story:sparql ?oldSparql . } } INSERT { GRAPH <$$graph_name> { ?impl sparql-story:sparql \"\"\"$$query_content\"\"\" . } } WHERE { GRAPH <$$graph_name> { ?impl sparql-story:fileName \"$$rq_filename\" . OPTIONAL { ?impl sparql-story:sparql ?oldSparql . } } }" ; \
 			$(CURL_BIN) -sf -X POST -H "Content-Type: application/sparql-update" \
+				$(SPARQL_AUTH_HEADER) \
 				--data-binary "$$sparql_update" \
 				"$(EKG_SPARQL_UPDATE_ENDPOINT)" \
 			|| { printf "$(red)ERROR: Failed to load SPARQL query $$rel_rq$(normal)\n" >&2; } ; \
